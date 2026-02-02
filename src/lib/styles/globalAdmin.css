@@ -1,0 +1,22 @@
+:root {
+	--font-body: "Inter", "Noto Sans Arabic", sans-serif;
+	--font-heading: "Inter", "Noto Sans Arabic", serif;
+	--font-brand: "Dream Orphans", "Noto Sans Arabic", serif;
+}
+
+* {
+	letter-spacing: unset;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-family: var(--font-body);
+	font-family: var(--font-brand);
+	font-size: clamp(2rem, 5vw, 3rem);
+	margin: 0;
+	font-weight: 700;
+}
