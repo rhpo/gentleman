@@ -12,6 +12,9 @@ export interface AdminLoginResult {
 	message?: string;
 }
 
+/**
+ * Authenticates an admin user using provided credentials and cookies.
+ */
 export async function serverLogin(cookies: any, input: AdminLoginInput): Promise<AdminLoginResult> {
 	const supabaseServer = createServerClient<Database>(
 		PUBLIC_SUPABASE_URL,
@@ -43,6 +46,9 @@ export async function serverLogin(cookies: any, input: AdminLoginInput): Promise
 	};
 }
 
+/**
+ * Checks the authentication status using provided cookies.
+ */
 export async function serverCheckAuth(cookies: any): Promise<boolean> {
 	const supabaseServer = createServerClient<Database>(
 		PUBLIC_SUPABASE_URL,
