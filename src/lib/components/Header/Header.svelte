@@ -7,7 +7,7 @@
 </script>
 
 <header>
-    <PromotionBar promos={[...$promos]} />
+    <PromotionBar promos={$promos} />
     <NavigationBar />
 </header>
 

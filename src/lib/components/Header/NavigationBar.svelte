@@ -6,7 +6,14 @@
   import { language } from "$lib/i18n";
 
   import { theme, toggleTheme } from "$lib/stores/theme";
-  import { Moon, Search, ShoppingBag, Sun } from "@lucide/svelte";
+  import {
+    Moon,
+    Search,
+    ShoppingBag,
+    Sun,
+    Heart,
+    ShoppingCart,
+  } from "@lucide/svelte";
 
   import IconButton from "../ui/IconButton.svelte";
   import HamburgerButton from "../ui/HamburgerButton.svelte";
@@ -55,7 +62,11 @@
     <div class="left">
       <HamburgerButton bind:open={$menuOpen} />
       <div class="search-button-left">
-        <IconButton Icon={Search} href="/search" />
+        <IconButton Icon={Search} href="/products" />
+
+        <div class="wishlist-button">
+          <IconButton href="/wishlist" Icon={Heart} strokeWidth={1.5} />
+        </div>
       </div>
     </div>
 
@@ -75,10 +86,14 @@
       </div>
 
       <div class="search-button-right">
-        <IconButton Icon={Search} href="/search" />
+        <div class="wishlist-button">
+          <IconButton href="/wishlist" Icon={Heart} strokeWidth={1} />
+        </div>
+
+        <IconButton Icon={Search} href="/products" />
       </div>
 
-      <IconButton href="/cart" Icon={ShoppingBag} strokeWidth={1} />
+      <IconButton href="/cart" Icon={ShoppingCart} strokeWidth={1} />
 
       <div class="language-selector">
         <LanguageSelector bind:language={$language} />
@@ -139,12 +154,24 @@
     letter-spacing: 0.1em;
     margin: 0;
     text-decoration: none;
+
+    transition: transform var(--transition-fast);
+  }
+
+  .logo:hover {
+    transform: scale(1.05);
   }
 
   :global([dir="rtl"]) .logo {
     font-weight: 500;
     font-size: clamp(1rem, 3vw, 3rem);
-    letter-spacing: 0;
+  }
+
+  .search-button-right,
+  .search-button-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   .search-button-right {
@@ -154,6 +181,9 @@
   @media (max-width: 768px) {
     main {
       padding: 0 1rem;
+    }
+    .wishlist-button {
+      display: none;
     }
 
     .left {
@@ -174,7 +204,7 @@
     }
 
     .search-button-right {
-      display: block;
+      display: flex;
     }
 
     .search-button-left {

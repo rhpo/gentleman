@@ -6,10 +6,13 @@
   import MainPage from "$lib/components/ui/MainPage.svelte";
   import Container from "$lib/components/ui/Container.svelte";
   import type { PageData } from "./$types";
+  import { Plus, ShoppingCart } from "@lucide/svelte";
+  import svelteTilt from "vanilla-tilt-svelte";
 
   let { data }: { data: PageData } = $props();
 
   let product = $derived(data.product);
+  let added = $state(false);
 
   function handleAddToCart(): void {
     if (product) {
@@ -19,21 +22,37 @@
         price: product.price,
         image: product.image,
       });
+      added = true;
+      setTimeout(() => {
+        added = false;
+      }, 2000);
     }
   }
+
+  let svelteTiltOptions = {
+    max: 10,
+    speed: 1000,
+    perspective: 1000,
+    scale: 1.1,
+  } as any;
 </script>
 
 <MainPage
   title={product?.name || "Product"}
   description={product?.description || ""}
 >
-  <Container>
+  <main>
     <div class="product-detail">
       <!-- Left: Image -->
       <div class="product-image-section">
         <div class="product-image-container">
           {#if product?.image}
-            <img src={product.image} alt={product.name} class="product-image" />
+            <img
+              src={product.image}
+              alt={product.name}
+              class="product-image"
+              use:svelteTilt={svelteTiltOptions}
+            />
           {:else}
             <div class="no-image">No image available</div>
           {/if}
@@ -92,22 +111,33 @@
           <Button
             type="primary"
             onclick={handleAddToCart}
-            class="add-to-cart-btn"
+            Icon={ShoppingCart}
+            fullWidth
+            disabled={added}
           >
-            {$t.addToCart}
+            {added ? $t.added : $t.addToCart}
           </Button>
         </div>
       </div>
     </div>
-  </Container>
+  </main>
 </MainPage>
 
 <style>
+  main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 2rem 0;
+    gap: 3rem;
+  }
+
   .product-detail {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 3rem;
-    padding: 2rem 0;
+    gap: 12rem;
+    padding: 2rem;
   }
 
   .product-image-section {

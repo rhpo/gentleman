@@ -19,7 +19,7 @@ export interface Database {
                     gender: 'Men' | 'Women' | 'Unisex';
                     scent_family: 'Floral' | 'Fruity' | 'Woody' | 'Oriental' | 'Fresh' | 'Gourmand' | null;
                     occasion: 'Everyday' | 'Evening' | 'Romantic' | 'Sport' | 'Luxury' | null;
-                    size: 'Sample' | 'Standard' | 'Large';
+                    size: number;
                     brand_id: number | null;
                     image: string; // bytea stored as base64
                     price: number;
@@ -34,7 +34,7 @@ export interface Database {
                     gender: 'Men' | 'Women' | 'Unisex';
                     scent_family?: 'Floral' | 'Fruity' | 'Woody' | 'Oriental' | 'Fresh' | 'Gourmand' | null;
                     occasion?: 'Everyday' | 'Evening' | 'Romantic' | 'Sport' | 'Luxury' | null;
-                    size: 'Sample' | 'Standard' | 'Large';
+                    size: number;
                     brand_id?: number | null;
                     image: string;
                     price: number;
@@ -49,7 +49,7 @@ export interface Database {
                     gender?: 'Men' | 'Women' | 'Unisex';
                     scent_family?: 'Floral' | 'Fruity' | 'Woody' | 'Oriental' | 'Fresh' | 'Gourmand' | null;
                     occasion?: 'Everyday' | 'Evening' | 'Romantic' | 'Sport' | 'Luxury' | null;
-                    size?: 'Sample' | 'Standard' | 'Large';
+                    size?: number;
                     brand_id?: number | null;
                     image?: string;
                     price?: number;

@@ -61,7 +61,7 @@
             borderWidth: 1,
             callbacks: {
               label: (context) =>
-                `Revenue: $${context.parsed.y?.toLocaleString() || 0}`,
+                `Revenue: ${context.parsed.y?.toLocaleString() || 0} DZD`,
             },
           },
         },
@@ -88,7 +88,8 @@
             },
             ticks: {
               color: "#9ca3af",
-              callback: (value) => `$${((value as number) / 1000).toFixed(0)}k`,
+              callback: (value) =>
+                `${((value as number) / 1000).toFixed(0)}k DZD`,
             },
           },
         },

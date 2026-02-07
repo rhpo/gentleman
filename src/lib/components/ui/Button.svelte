@@ -10,7 +10,8 @@
         fullWidth = false,
         onClick = () => {},
         children = null,
-        color = "var(--primary)",
+        color = "var(--color-accent)",
+        colorHover = "var(--color-hover)",
         isSubmit = false,
 
         // css
@@ -32,6 +33,7 @@
         onClick?: () => void;
         children?: any;
         color?: string;
+        colorHover?: string;
 
         round?: boolean;
         large?: boolean;
@@ -40,6 +42,20 @@
 
         isSubmit?: boolean;
     } & Record<string, any> = $props();
+
+    let styleBuilder = $derived(
+        (() => {
+            let styles: Record<typeof type, string> = {
+                primary: `--color: ${color}; --bg-color: ${color}; --accent: var(--color-accent); --hover: var(--color-hover);`,
+                secondary: `--color: ${color}; --border-color: ${color}; --accent: ${color}; --color-hover: ${colorHover};`,
+                third: `--color: ${color}; --bg-color: ${color};`,
+                cta: `--color: ${color}; --bg-color: ${color};`,
+                error: `--color: ${color}; --bg-color: ${color};`,
+            };
+
+            return styles[type];
+        })(),
+    );
 </script>
 
 {#if href}
@@ -52,6 +68,7 @@
         class:auto-width={autoWidth}
         class:full-width={fullWidth}
         {href}
+        style={styleBuilder}
         {...rest}
         onclick={onClick}
     >
@@ -76,6 +93,7 @@
         class:uppercase
         class:round
         class:blink
+        style={styleBuilder}
         class:auto-width={autoWidth}
         onclick={onClick}
         class:full-width={fullWidth}
@@ -117,29 +135,24 @@
         position: relative;
     }
 
-    :global([dir="rtl"]) .button {
-        letter-spacing: 0;
-        word-spacing: 0.2em;
-    }
-
     .primary {
-        background-color: var(--color-accent);
+        background-color: var(--accent);
         color: var(--color-bg);
     }
 
     .primary:hover:not([disabled]) {
-        background-color: var(--color-hover);
+        background-color: var(--hover);
         transform: translateY(-2px);
         box-shadow: var(--shadow-md);
     }
 
     .secondary {
-        border: 1px solid var(--color-accent);
-        color: var(--color-accent);
+        border: 1px solid var(--accent);
+        color: var(--accent);
     }
 
     .secondary:hover:not([disabled]) {
-        background-color: var(--color-accent);
+        background-color: var(--accent);
         color: var(--color-bg);
         transform: translateY(-2px);
     }
@@ -205,6 +218,10 @@
         50% {
             opacity: 0.7;
         }
+    }
+
+    .button.full-width {
+        width: 100%;
     }
 
     @media (max-width: 768px) {

@@ -2,6 +2,7 @@ import { supabase } from '$lib/supabase';
 import type { PageServerLoad } from './$types';
 import type { ProductWithBrand } from '$lib/types/entities';
 import { Buffer } from 'buffer';
+import { listBrands, type Brand } from '$lib/api/brands';
 
 function hexToBase64(hex: string): string {
     if (!hex) return '';
@@ -25,7 +26,8 @@ export const load: PageServerLoad = async () => {
     if (error) {
         console.error('Error fetching featured products:', error);
         return {
-            featuredProducts: []
+            featuredProducts: [],
+            brands: []
         };
     }
 
@@ -37,11 +39,21 @@ export const load: PageServerLoad = async () => {
             price: product.price,
             image: product.image ? product.image : '',
             type: product.type,
-            brand: product.brand?.name
+            brand: (product as any).brands?.name
         };
     });
 
+    // Fetch all brands
+    let brands: Brand[] = [];
+
+    try {
+        brands = await listBrands();
+    } catch (err) {
+        console.error('Error fetching brands:', err);
+    }
+
     return {
-        featuredProducts
+        featuredProducts,
+        brands
     };
 };

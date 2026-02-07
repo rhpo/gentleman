@@ -9,9 +9,25 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
             productService.getProducts(locals.supabase)
         ]);
 
+        // Create a map for quick product lookup
+        const productMap = new Map();
+        products.forEach(p => {
+            productMap.set(p.id, p);
+        });
+
         const now = new Date();
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
+
+        // Helper to calculate order total
+        const calculateOrderTotal = (orderProducts: any[]) => {
+            return orderProducts.reduce((total: number, item: any) => {
+                const product = productMap.get(item.product_id);
+                // Fallback to item.price if available, otherwise use current product price, otherwise 0
+                const price = product?.price || item.price || 0;
+                return total + (price * item.quantity);
+            }, 0);
+        };
 
         // Calculate revenue by month (last 12 months)
         const revenueByMonth = Array.from({ length: 12 }, (_, i) => {
@@ -24,9 +40,7 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
             });
 
             const revenue = monthOrders.reduce((sum: number, order: any) => {
-                const orderTotal = order.products.reduce((total: number, item: any) =>
-                    total + (item.price * item.quantity), 0);
-                return sum + orderTotal;
+                return sum + calculateOrderTotal(order.products);
             }, 0);
 
             return {
@@ -55,7 +69,8 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
         orders.forEach((order: any) => {
             if (order.status !== 'canceled') {
                 order.products.forEach((item: any) => {
-                    const productName = item.name || 'Unknown';
+                    const product = productMap.get(item.product_id);
+                    const productName = product?.name || item.name || 'Unknown';
                     productSales[productName] = (productSales[productName] || 0) + item.quantity;
                 });
             }
@@ -110,9 +125,7 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
         const totalRevenue = orders
             .filter((order: any) => order.status !== 'canceled')
             .reduce((sum: number, order: any) => {
-                const orderTotal = order.products.reduce((total: number, item: any) =>
-                    total + (item.price * item.quantity), 0);
-                return sum + orderTotal;
+                return sum + calculateOrderTotal(order.products);
             }, 0);
 
         const totalOrders = orders.length;
@@ -141,17 +154,13 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
         const lastMonthRevenue = lastMonthOrders
             .filter((order: any) => order.status !== 'canceled')
             .reduce((sum: number, order: any) => {
-                const orderTotal = order.products.reduce((total: number, item: any) =>
-                    total + (item.price * item.quantity), 0);
-                return sum + orderTotal;
+                return sum + calculateOrderTotal(order.products);
             }, 0);
 
         const twoMonthsAgoRevenue = twoMonthsAgoOrders
             .filter((order: any) => order.status !== 'canceled')
             .reduce((sum: number, order: any) => {
-                const orderTotal = order.products.reduce((total: number, item: any) =>
-                    total + (item.price * item.quantity), 0);
-                return sum + orderTotal;
+                return sum + calculateOrderTotal(order.products);
             }, 0);
 
         const revenueChange = twoMonthsAgoRevenue > 0

@@ -201,7 +201,7 @@
       <div class="separator"></div>
       <div class="info-item">
         <span class="label">Total</span>
-        <span class="value">${calculateTotal().toFixed(2)}</span>
+        <span class="value">{calculateTotal().toLocaleString()} DA</span>
       </div>
     </div>
 
@@ -266,16 +266,16 @@
                 </div>
                 <div class="col-name">
                   <div class="name">{product.name}</div>
-                  {#if product.brand}
+                  {#if product.brand && typeof product.brand !== "string"}
                     <div class="brand">{product.brand.name}</div>
                   {/if}
                 </div>
                 <div class="col-qty">{item.quantity}</div>
                 <div class="col-price">
-                  ${product.price.toFixed(2)}
+                  {product.price.toLocaleString()} DA
                 </div>
                 <div class="col-total">
-                  ${(product.price * item.quantity).toFixed(2)}
+                  {(product.price * item.quantity).toLocaleString()} DA
                 </div>
               {:else}
                 <div class="col-image">

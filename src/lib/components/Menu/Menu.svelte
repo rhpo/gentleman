@@ -1,7 +1,15 @@
 <script>
   import { t } from "$lib/i18n/translations";
   import { menuOpen } from "$lib/stores/menu";
-  import { Home, ShoppingBag, User, SprayCan, Moon, Sun } from "@lucide/svelte";
+  import {
+    Home,
+    ShoppingBag,
+    User,
+    SprayCan,
+    Moon,
+    Sun,
+    Heart,
+  } from "@lucide/svelte";
   import { onMount } from "svelte";
   import IconButton from "../ui/IconButton.svelte";
   import { theme, toggleTheme } from "$lib/stores/theme";
@@ -26,6 +34,7 @@
   let links = $derived([
     { Icon: Home, href: "/", label: $t.home },
     { Icon: SprayCan, href: "/products", label: $t.products },
+    { Icon: Heart, href: "/wishlist", label: $t.wishlist },
     { Icon: ShoppingBag, href: "/cart", label: $t.cart },
   ]);
 </script>
@@ -126,10 +135,6 @@
 
   :global([dir="rtl"]) .link:hover .icon {
     transform: rotate(10deg) translateY(-5px) scale(1.2);
-  }
-
-  :global([dir="rtl"]) .link a {
-    letter-spacing: 0;
   }
 
   .actions {

@@ -96,7 +96,7 @@
     .button.selected {
         background: var(--color-accent) !important;
         color: var(--color-white) !important;
-        transform: scale(1.05) rotate(5deg) translateY(-2px);
+        transform: scale(1.05) translateY(-2px);
         border: var(--border-icon) dashed var(--color-accent) !important;
     }
 

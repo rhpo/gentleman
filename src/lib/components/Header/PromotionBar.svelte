@@ -1,6 +1,5 @@
 <script lang="ts">
     import { X } from "@lucide/svelte";
-    import { onMount } from "svelte";
 
     import IconButton from "../ui/IconButton.svelte";
     import { slide } from "svelte/transition";
@@ -10,7 +9,9 @@
 
     let show = $state(true);
 
-    onMount(() => {
+    $effect(() => {
+        if (promos.length === 0) return;
+
         const interval = setInterval(() => {
             currentPromotionIndex = (currentPromotionIndex + 1) % promos.length;
         }, 3000);
@@ -89,7 +90,6 @@
 
     :global([dir="rtl"]) .promo {
         font-weight: 500;
-        letter-spacing: 0;
         word-spacing: 0.2em;
     }
 

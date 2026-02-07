@@ -110,6 +110,11 @@
     .modal-body {
         padding: var(--spacing-md);
     }
+    @media screen and (max-width: 720px) {
+        .modal-body {
+            padding: var(--spacing-sm);
+        }
+    }
 
     @keyframes fadeIn {
         from {

@@ -18,7 +18,7 @@
     type = "text",
     label,
     placeholder,
-    value = "",
+    value = $bindable(""),
     required = false,
     disabled = false,
     step,

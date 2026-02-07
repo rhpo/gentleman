@@ -26,5 +26,10 @@ export const ADMIN_NAVIGATION = [
         title: 'Analytics',
         Icon: ChartBar,
         href: '/admin/analytics'
+    },
+    {
+        title: 'Coupons',
+        Icon: Tag,
+        href: '/admin/coupons'
     }
 ];

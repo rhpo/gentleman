@@ -1,21 +1,29 @@
 <script>
+    import { brands } from "$lib/i18n/brand";
+
     let { title, description, children } = $props();
 </script>
 
 <svelte:head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>{title || "Gentleman - Elegance is not loud"}</title>
+    <title>
+        {title
+            ? title + ` - ${$brands.name}`
+            : `${$brands.name} - Elegance is not loud`}
+    </title>
 
     <meta
         name="description"
         content={description ||
-            "Gentleman - Luxury perfumes, watches, and sunglasses in Algeria"}
+            `${$brands.name} - Luxury perfumes, watches, and sunglasses in Algeria`}
     />
 
     <meta
         property="og:title"
-        content={title || "Gentleman - Elegance is not loud"}
+        content={title
+            ? title + ` - ${$brands.name}`
+            : `${$brands.name} - Elegance is not loud`}
     />
 
     <meta

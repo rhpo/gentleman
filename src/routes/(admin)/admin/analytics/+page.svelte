@@ -28,7 +28,7 @@
       ? [
           {
             title: "Total Revenue",
-            value: `$${Number(data.analytics.metrics.totalRevenue).toLocaleString()}`,
+            value: `${Number(data.analytics.metrics.totalRevenue).toLocaleString()} DZD`,
             change: data.analytics.metrics.revenueChange,
             trend: data.analytics.metrics.revenueTrend as "up" | "down",
             Icon: DollarSign,
@@ -160,13 +160,13 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: var(--spacing-md);
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
   }
 
   .charts-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: var(--spacing-lg);
+    gap: var(--spacing-md);
   }
 
   .chart-container,

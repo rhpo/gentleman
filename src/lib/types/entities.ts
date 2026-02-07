@@ -5,7 +5,7 @@ export type ProductCategory = 'Eau de Parfum' | 'Eau de Toilette' | 'Cologne' | 
 export type ProductGender = 'Men' | 'Women' | 'Unisex';
 export type ScentFamily = 'Floral' | 'Fruity' | 'Woody' | 'Oriental' | 'Fresh' | 'Gourmand';
 export type ProductOccasion = 'Everyday' | 'Evening' | 'Romantic' | 'Sport' | 'Luxury';
-export type ProductSize = 50 | 100 | 200; // ml: Sample=50, Standard=100, Large=200
+export type ProductSize = number;
 
 export const PRODUCT_SIZE_OPTIONS = [
     { value: 50, label: 'Sample (50ml)' },
@@ -44,7 +44,8 @@ export interface ProductInput {
 }
 
 export interface ProductWithBrand extends Product {
-    brand?: Brand | null;
+    brand?: Brand | string | null;
+    brands?: any | null;
 }
 
 // Brand types
@@ -54,6 +55,7 @@ export interface Brand {
     logo: string;
     short_description: string;
     created_at: string;
+    products_count?: number;
 }
 
 export interface BrandInput {
@@ -92,28 +94,21 @@ export interface OrderInput {
 }
 
 // Coupon types
-export type CouponType = 'fixed' | 'percentage';
-
 export interface Coupon {
     id: number;
     code: string;
-    type: CouponType;
-    value: number;
-    min_amount: number | null;
-    max_uses: number | null;
-    used_count: number;
-    expires_at: string | null;
-    created_at: string;
+    reduction_percent: number;
+    valid_from: string;
+    valid_until: string;
     active: boolean;
+    created_at: string;
 }
 
 export interface CouponInput {
     code: string;
-    type: CouponType;
-    value: number;
-    min_amount?: number | null;
-    max_uses?: number | null;
-    expires_at?: string | null;
+    reduction_percent: number;
+    valid_from: string;
+    valid_until: string;
     active?: boolean;
 }
 

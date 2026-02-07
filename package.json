@@ -29,6 +29,10 @@
 		"chartjs-adapter-date-fns": "^3.0.0",
 		"country-flag-icons": "^1.6.8",
 		"date-fns": "^4.1.0",
-		"smooth-scrollbar": "^8.8.4"
+		"embla-carousel-auto-scroll": "^8.6.0",
+		"embla-carousel-autoplay": "^8.6.0",
+		"embla-carousel-svelte": "^8.6.0",
+		"smooth-scrollbar": "^8.8.4",
+		"vanilla-tilt-svelte": "^1.0.4"
 	}
 }

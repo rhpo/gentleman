@@ -13,6 +13,8 @@
   import { t } from "$lib/i18n/translations";
   import { goto } from "$app/navigation";
   import { brands } from "$lib/i18n/brand";
+  import { ArrowRight, CircleQuestionMark, Eye, Trash } from "@lucide/svelte";
+  import MainPage from "$lib/components/ui/MainPage.svelte";
 
   function handleCheckout(): void {
     if ($cartTotal.itemCount > 0) {
@@ -21,101 +23,111 @@
   }
 </script>
 
-<svelte:head>
-  <title>{$t.cart} - {$brands.name}</title>
-</svelte:head>
+<MainPage
+  title={$t.cart}
+  description={`${
+    $cartTotal.itemCount === 0 ? $t.emptyCart : $t.cartDescription
+  }`}
+>
+  <div class="cart-page">
+    <div class="container">
+      <h1 class="page-title">{$t.yourCart}</h1>
 
-<div class="cart-page">
-  <div class="container">
-    <h1 class="page-title">{$t.yourCart}</h1>
-
-    {#if $cartTotal.itemCount === 0}
-      <div class="empty-cart">
-        <p>{$t.emptyCart}</p>
-        <Button type="primary" onclick={() => goto("/products")}>
-          {$t.products}
-        </Button>
-      </div>
-    {:else}
-      <div class="cart-content">
-        <!-- Cart Items -->
-        <div class="cart-items">
-          {#each $cart.items as item}
-            <div class="cart-item">
-              <img src={item.image} alt={item.name} class="item-image" />
-              <div class="item-info">
-                <h3>{item.name}</h3>
-                <p class="item-price">
-                  {item.price.toFixed(2)} DA
-                </p>
-              </div>
-              <div class="item-quantity">
-                <button
-                  onclick={() =>
-                    updateQuantity(item.productId, item.quantity - 1)}
-                  class="quantity-btn"
-                >
-                  -
-                </button>
-                <span>{item.quantity}</span>
-                <button
-                  onclick={() =>
-                    updateQuantity(item.productId, item.quantity + 1)}
-                  class="quantity-btn"
-                >
-                  +
-                </button>
-              </div>
-              <div class="item-total">
-                <p>
-                  {(item.price * item.quantity).toFixed(2)} DA
-                </p>
-              </div>
-              <button
-                onclick={() => removeFromCart(item.productId)}
-                class="remove-btn"
-              >
-                ×
-              </button>
-            </div>
-          {/each}
-        </div>
-
-        <!-- Cart Summary -->
-        <div class="cart-summary">
-          <h3>{$t.total}</h3>
-
-          <div class="summary-row">
-            <span>{$t.subtotal}</span>
-            <span>{$cartTotal.subtotal.toFixed(2)} DA</span>
-          </div>
-
-          {#if $cart.discount > 0}
-            <div class="summary-row discount">
-              <span>Discount ({$cart.discount}%)</span>
-              <span
-                >-{(($cartTotal.subtotal * $cart.discount) / 100).toFixed(2)} DA</span
-              >
-            </div>
-          {/if}
-
-          <div class="summary-row total">
-            <span>{$t.total}</span>
-            <span>{$cartTotal.total.toFixed(2)} DA</span>
-          </div>
-
-          <Button type="primary" onclick={handleCheckout}>
-            {$t.checkout}
+      {#if $cartTotal.itemCount === 0}
+        <div class="empty-cart">
+          <CircleQuestionMark size={100} />
+          <p style="margin-top: var(--spacing-sm);">{$t.emptyCart}</p>
+          <Button type="primary" onclick={() => goto("/products")} Icon={Eye}>
+            {$t.discover}
+            {$t.products}
           </Button>
-
-          <button class="clear-cart-btn" onclick={clearCart}>
-            Clear Cart
-          </button>
         </div>
-      </div>
-    {/if}
+      {:else}
+        <div class="cart-content">
+          <!-- Cart Items -->
+          <div class="cart-items">
+            {#each $cart.items as item}
+              <div class="cart-item">
+                <img src={item.image} alt={item.name} class="item-image" />
+                <div class="item-info">
+                  <h3>{item.name}</h3>
+                  <p class="item-price">
+                    {item.price.toFixed(2)} DA
+                  </p>
+                </div>
+                <div class="item-quantity">
+                  <button
+                    onclick={() =>
+                      updateQuantity(item.productId, item.quantity - 1)}
+                    class="quantity-btn"
+                  >
+                    -
+                  </button>
+                  <span>{item.quantity}</span>
+                  <button
+                    onclick={() =>
+                      updateQuantity(item.productId, item.quantity + 1)}
+                    class="quantity-btn"
+                  >
+                    +
+                  </button>
+                </div>
+                <div class="item-total">
+                  <p>
+                    {(item.price * item.quantity).toFixed(2)} DA
+                  </p>
+                </div>
+                <button
+                  onclick={() => removeFromCart(item.productId)}
+                  class="remove-btn"
+                >
+                  ×
+                </button>
+              </div>
+            {/each}
+          </div>
+
+          <!-- Cart Summary -->
+          <div class="cart-summary">
+            <h3>{$t.total}</h3>
+
+            <div class="summary-row">
+              <span>{$t.subtotal}</span>
+              <span>{$cartTotal.subtotal.toFixed(2)} DA</span>
+            </div>
+
+            {#if $cart.discount > 0}
+              <div class="summary-row discount">
+                <span>Discount ({$cart.discount}%)</span>
+                <span
+                  >-{(($cartTotal.subtotal * $cart.discount) / 100).toFixed(2)} DA</span
+                >
+              </div>
+            {/if}
+
+            <div class="summary-row total">
+              <span>{$t.total}</span>
+              <span>{$cartTotal.total.toFixed(2)} DA</span>
+            </div>
+
+            <Button
+              type="primary"
+              onclick={handleCheckout}
+              fullWidth
+              Icon={ArrowRight}
+            >
+              {$t.checkout}
+            </Button>
+
+            <Button type="error" onclick={clearCart} fullWidth Icon={Trash}>
+              {$t.clearCart}
+            </Button>
+          </div>
+        </div>
+      {/if}
+    </div>
   </div>
-</div>
+</MainPage>
 
 <style>
   .cart-page {

@@ -173,16 +173,19 @@ export async function updateProduct(
  */
 export async function deleteProduct(supabase: SupabaseClient<Database>, id: number): Promise<void> {
     // Get the product to find image path
-    const { data: productData } = await supabase.from('products').select('image_path').eq('id', id).single();
+    const { data: productData } = await supabase.from('products').select('image').eq('id', id).single();
 
     // Delete from database
     const { error } = await supabase.from('products').delete().eq('id', id);
     if (error) throw new Error(error.message);
 
     // Delete image from storage
-    if ((productData as any)?.image_path) {
-        await deleteFile(STORAGE_BUCKETS.PRODUCT_IMAGES, (productData as any).image_path).catch((err: unknown) => {
-            console.error('Failed to delete product image:', err);
-        });
+    if ((productData as any)?.image) {
+        const imagePath = extractPathFromUrl((productData as any).image);
+        if (imagePath) {
+            await deleteFile(STORAGE_BUCKETS.PRODUCT_IMAGES, imagePath).catch((err: unknown) => {
+                console.error('Failed to delete product image:', err);
+            });
+        }
     }
 }

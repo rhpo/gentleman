@@ -5,13 +5,14 @@
   import Button from "../ui/Button.svelte";
   import ProductWithActions from "./ProductWithActions.svelte";
   import type { ProductWithBrand } from "$lib/types/entities";
-  import { onMount } from "svelte";
+  import { ShoppingCart } from "@lucide/svelte";
 
   interface ProductCardProps {
     product: ProductWithBrand;
   }
 
   let { product }: ProductCardProps = $props();
+  let added = $state(false);
 
   function handleAddToCart(): void {
     addToCart({
@@ -20,15 +21,23 @@
       price: product.price,
       image: product.image,
     });
+    added = true;
+    setTimeout(() => {
+      added = false;
+    }, 2000);
   }
-
-  onMount(() => {
-    console.log(product);
-  });
 </script>
 
 <ProductWithActions {product}>
-  <Button type="primary" onclick={handleAddToCart}>
-    {$t.addToCart}
+  <Button
+    type="cta"
+    fullWidth
+    onclick={handleAddToCart}
+    Icon={ShoppingCart}
+    iconPosition="left"
+    iconSize={18}
+    disabled={added}
+  >
+    {added ? $t.added : $t.addToCart}
   </Button>
 </ProductWithActions>

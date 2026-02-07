@@ -7,11 +7,13 @@
   import type { Json } from "$lib/types/database";
   import { createOrder } from "$lib/api/orders";
   import { brands } from "$lib/i18n/brand";
+  import { numberToWilaya } from "$lib/constants/wilaya";
+  import { Check, Percent } from "@lucide/svelte";
 
   let customerName = $state("");
   let phoneNumber = $state("");
   let address = $state("");
-  let wilaya = $state(1);
+  let wilaya = $state(16);
   let couponCode = $state("");
   let couponError = $state("");
   let couponSuccess = $state(false);
@@ -129,7 +131,7 @@
 
           <div class="form-group">
             <label for="address">{$t.address} *</label>
-            <textarea id="address" bind:value={address} rows="3" required
+            <textarea id="address" bind:value={address} rows="1" required
             ></textarea>
           </div>
 
@@ -137,7 +139,9 @@
             <label for="wilaya">{$t.wilaya} *</label>
             <select id="wilaya" bind:value={wilaya} required>
               {#each wilayaOptions as option}
-                <option value={option}>{option}</option>
+                <option value={option}
+                  >{option} &bull; {numberToWilaya(option)}</option
+                >
               {/each}
             </select>
           </div>
@@ -148,7 +152,7 @@
             </div>
           {/if}
 
-          <Button type="primary" disabled={isSubmitting}>
+          <Button type="primary" disabled={isSubmitting} fullWidth Icon={Check}>
             {isSubmitting ? "Processing..." : $t.placeOrder}
           </Button>
         </form>
@@ -174,7 +178,7 @@
                 bind:value={couponCode}
                 placeholder="Enter code"
               />
-              <Button type="secondary" onclick={handleApplyCoupon}>
+              <Button type="cta" onclick={handleApplyCoupon} Icon={Percent}>
                 {$t.apply}
               </Button>
             </div>
@@ -343,6 +347,7 @@
 
   .coupon-input {
     display: flex;
+    flex-direction: column;
     gap: var(--spacing-xs);
   }
 

@@ -16,6 +16,7 @@ export interface ProductFilters {
 	scentFamily?: ProductRow['scent_family'] | '';
 	occasion?: ProductRow['occasion'] | '';
 	size?: ProductRow['size'] | '';
+	brand?: string;
 }
 
 /**
@@ -23,10 +24,13 @@ export interface ProductFilters {
  * Images are now stored as URLs in Supabase Storage
  */
 export async function listProducts(filters: ProductFilters = {}): Promise<ProductWithBrand[]> {
-	let query = supabase.from('products').select('*, brands(name, logo)');
+	let query = supabase
+		.from('products')
+		.select('*, brands!inner(name, logo)');
 
 	if (filters.query) {
-		query = query.ilike('name', `%${filters.query}%`);
+		const q = `%${filters.query}%`;
+		query = query.or(`name.ilike.${q},description.ilike.${q},type.ilike.${q},category.ilike.${q},gender.ilike.${q},scent_family.ilike.${q},occasion.ilike.${q}`);
 	}
 
 	if (filters.type) {
@@ -46,7 +50,20 @@ export async function listProducts(filters: ProductFilters = {}): Promise<Produc
 	}
 
 	if (filters.size) {
-		query = query.eq('size', filters.size);
+		const sizeVal = Number(filters.size);
+		if (sizeVal === 50) {
+			query = query.lte('size', 50);
+		} else if (sizeVal === 100) {
+			query = query.gt('size', 50).lte('size', 100);
+		} else if (sizeVal === 200) {
+			query = query.gt('size', 100);
+		} else {
+			query = query.eq('size', sizeVal);
+		}
+	}
+
+	if (filters.brand) {
+		query = query.eq('brands.name', filters.brand);
 	}
 
 	const { data, error } = await query;
@@ -76,6 +93,21 @@ export async function getProductById(id: number): Promise<ProductWithBrand | nul
 
 	// Images are already URLs from the database
 	return data as unknown as ProductWithBrand;
+}
+
+export async function getProductsByIds(ids: number[]): Promise<ProductWithBrand[]> {
+	if (!ids.length) return [];
+
+	const { data, error } = await supabase
+		.from('products')
+		.select('*, brands(name, logo)')
+		.in('id', ids);
+
+	if (error) {
+		throw new Error(error.message);
+	}
+
+	return (data || []) as ProductWithBrand[];
 }
 
 export async function deleteProduct(id: number): Promise<void> {

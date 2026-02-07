@@ -12,11 +12,11 @@
     </div>
 
     <div class="footer-section">
-      <h4>{$t.categories}</h4>
+      <h4>{$t.gender}</h4>
       <ul>
-        <li><a href="/products?type=parfum">{$t.parfum}</a></li>
-        <li><a href="/products?type=montre">{$t.montre}</a></li>
-        <li><a href="/products?type=lunettes">{$t.lunettes}</a></li>
+        <li><a href="/products?gender=men">{$t.forMen}</a></li>
+        <li><a href="/products?gender=women">{$t.forWomen}</a></li>
+        <li><a href="/products?gender=mixture">{$t.forMixture}</a></li>
       </ul>
     </div>
 
@@ -40,7 +40,7 @@
     background-color: var(--color-accent);
     color: var(--color-bg);
     padding: var(--spacing-xl) 0 var(--spacing-md);
-    margin-top: var(--spacing-xl);
+    margin-top: var(--spacing-xs);
   }
 
   .footer-container {
@@ -60,11 +60,6 @@
     letter-spacing: 0.2em;
 
     font-weight: 300;
-  }
-
-  :global([dir="rtl"]) .footer-section h3,
-  :global([dir="rtl"]) .footer-section h4 {
-    letter-spacing: 0;
   }
 
   .brand {

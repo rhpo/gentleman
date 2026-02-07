@@ -19,6 +19,7 @@ export const POST: RequestHandler = async ({ request }) => {
         });
     } catch (err) {
         console.error('Error validating coupon:', err);
-        return json({ error: 'Failed to validate coupon' }, { status: 500 });
+        const message = err instanceof Error ? err.message : 'Failed to validate coupon';
+        return json({ error: message }, { status: 400 });
     }
 };

@@ -9,13 +9,22 @@ export interface Translations {
     home: string;
     products: string;
     cart: string;
+    cartDescription: string;
     admin: string;
     search: string;
+    wishlist: string;
+    yourWishlist: string;
+    emptyWishlist: string;
+    likedProducts: string;
 
     // Product types
     parfum: string;
     montre: string;
     lunettes: string;
+
+    forMen: string;
+    forWomen: string;
+    forMixture: string;
 
     // Categories
     eauDeParfum: string;
@@ -50,7 +59,10 @@ export interface Translations {
 
     // Actions
     addToCart: string;
+    added: string;
+    discover: string;
     checkout: string;
+    clearCart: string;
     apply: string;
     cancel: string;
     save: string;
@@ -113,6 +125,19 @@ export interface Translations {
     categories: string;
 
     contact: string;
+
+    searchProducts: string;
+
+    clearFilters: string;
+
+    noProductsFound: string;
+
+    noBrandsFoundFor: string;
+    selectBrand: string;
+
+    allBrands: string;
+
+    featuredProducts: string;
 }
 
 export const t = derived<typeof language, Translations>(
@@ -123,6 +148,16 @@ export const t = derived<typeof language, Translations>(
 export const translations: Record<Language, Translations> = {
 
     fr: {
+        featuredProducts: 'En Tendance',
+        cartDescription: "Découvrez nos parfums, montres et lunettes de luxe",
+        allBrands: "Toutes les marques",
+        selectBrand: "Choisir une marque",
+        noBrandsFoundFor: 'Pas de marques trouvés pour',
+        clearCart: 'Vider le panier',
+        discover: 'Découvrir',
+        noProductsFound: 'Aucun produit trouvé',
+        clearFilters: 'Effacer les filtres',
+        searchProducts: 'Rechercher des produits',
         contact: 'Contact',
         categories: 'Catégories',
         home: 'Accueil',
@@ -130,10 +165,18 @@ export const translations: Record<Language, Translations> = {
         cart: 'Panier',
         admin: 'Admin',
         search: 'Rechercher',
+        wishlist: 'Favoris',
+        yourWishlist: 'Vos favoris',
+        emptyWishlist: 'Votre liste de favoris est vide',
+        likedProducts: 'Produits aimés',
 
         parfum: 'Parfum',
         montre: 'Montre',
         lunettes: 'Lunettes',
+
+        forMen: 'Pour Homme',
+        forWomen: 'Pour Femme',
+        forMixture: 'Unisex',
 
         eauDeParfum: 'Eau de Parfum',
         eauDeToilette: 'Eau de Toilette',
@@ -162,6 +205,7 @@ export const translations: Record<Language, Translations> = {
         large: 'Grand',
 
         addToCart: 'Ajouter au panier',
+        added: 'Ajouté',
         checkout: 'Commander',
         apply: 'Appliquer',
         cancel: 'Annuler',
@@ -211,10 +255,21 @@ export const translations: Record<Language, Translations> = {
         email: 'contact.gentlemann@gmail.com',
 
         filterBy: 'Filtrer par',
-        allProducts: 'Tous les produits',
+        allProducts: 'Tous les Parfums',
         allRightsReserved: 'Tous droits réservés'
     },
     en: {
+        featuredProducts: 'Trending',
+
+        cartDescription: "Discover our luxury perfumes, watches, and sunglasses",
+        allBrands: "All Brands",
+        selectBrand: "Select a brand",
+        noBrandsFoundFor: 'No Brands found for',
+        clearCart: 'Clear Cart',
+        discover: 'Discover',
+        noProductsFound: 'No products found',
+        clearFilters: 'Clear filters',
+        searchProducts: 'Search products',
         contact: 'Contact',
         categories: 'Categories',
         home: 'Home',
@@ -222,10 +277,18 @@ export const translations: Record<Language, Translations> = {
         cart: 'Cart',
         admin: 'Admin',
         search: 'Search',
+        wishlist: 'Wishlist',
+        yourWishlist: 'Your Wishlist',
+        emptyWishlist: 'Your wishlist is empty',
+        likedProducts: 'Liked Products',
 
         parfum: 'Perfume',
         montre: 'Watch',
         lunettes: 'Sunglasses',
+
+        forMen: 'For Men',
+        forWomen: 'For Women',
+        forMixture: 'Unisex',
 
         eauDeParfum: 'Eau de Parfum',
         eauDeToilette: 'Eau de Toilette',
@@ -254,6 +317,7 @@ export const translations: Record<Language, Translations> = {
         large: 'Large',
 
         addToCart: 'Add to cart',
+        added: 'Added',
         checkout: 'Checkout',
         apply: 'Apply',
         cancel: 'Cancel',
@@ -303,11 +367,21 @@ export const translations: Record<Language, Translations> = {
         email: 'contact.gentlemann@gmail.com',
 
         filterBy: 'Filter by',
-        allProducts: 'All products',
+        allProducts: 'All fragrances',
 
         allRightsReserved: 'All rights reserved',
     },
     ar: {
+        featuredProducts: 'المنتجات الرائجة',
+        cartDescription: "اكتشف عطورنا الفاخرة وساعاتنا ونظاراتنا الشمسية",
+        allBrands: "جميع العلامات التجارية",
+        selectBrand: "اختر علامة تجارية",
+        noBrandsFoundFor: 'لم يتم العثور على أي علامات تجارية لـ',
+        clearCart: 'مسح السلة',
+        discover: 'اكتشف',
+        noProductsFound: 'لا توجد منتجات',
+        clearFilters: 'مسح الفلاتر',
+        searchProducts: 'بحث عن منتجات',
         contact: 'اتصل بنا',
         categories: 'التصنيفات',
         home: 'الرئيسية',
@@ -315,10 +389,18 @@ export const translations: Record<Language, Translations> = {
         cart: 'السلة',
         admin: 'الإدارة',
         search: 'بحث',
+        wishlist: 'المفضلة',
+        yourWishlist: 'قائمة مفضلاتك',
+        emptyWishlist: 'قائمة مفضلاتك فارغة',
+        likedProducts: 'المنتجات المفضلة',
 
         parfum: 'عطر',
         montre: 'ساعة',
         lunettes: 'نظارات',
+
+        forMen: 'للرجال',
+        forWomen: 'للنساء',
+        forMixture: 'مختلط',
 
         eauDeParfum: 'عطر مركز',
         eauDeToilette: 'عطر خفيف',
@@ -347,6 +429,7 @@ export const translations: Record<Language, Translations> = {
         large: 'كبير',
 
         addToCart: 'أضف إلى السلة',
+        added: 'تمت الإضافة',
         checkout: 'إتمام الطلب',
         apply: 'تطبيق',
         cancel: 'إلغاء',

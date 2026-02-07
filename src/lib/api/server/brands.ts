@@ -2,6 +2,12 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database';
 import type { Brand, BrandInput } from '$lib/types/entities';
 
+import {
+    deleteFile,
+    extractPathFromUrl
+} from '../storage';
+import { STORAGE_BUCKETS } from '$lib/constants/storage';
+
 export async function getBrands(supabase: SupabaseClient<Database>): Promise<Brand[]> {
     const { data, error } = await supabase.from('brands').select('*');
     if (error) throw new Error(error.message);
@@ -38,6 +44,19 @@ export async function updateBrand(
 }
 
 export async function deleteBrand(supabase: SupabaseClient<Database>, id: number): Promise<void> {
+    // Get the brand to find logo path
+    const { data: brandData } = await supabase.from('brands').select('logo').eq('id', id).single();
+
     const { error } = await supabase.from('brands').delete().eq('id', id);
     if (error) throw new Error(error.message);
+
+    // Delete logo from storage
+    if (brandData && (brandData as any).logo) {
+        const logoPath = extractPathFromUrl((brandData as any).logo);
+        if (logoPath) {
+            await deleteFile(STORAGE_BUCKETS.BRAND_LOGOS, logoPath).catch((err: unknown) => {
+                console.error('Failed to delete brand logo:', err);
+            });
+        }
+    }
 }

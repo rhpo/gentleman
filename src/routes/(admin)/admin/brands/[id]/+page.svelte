@@ -186,10 +186,6 @@
   }
 </script>
 
-<svelte:head>
-  <title>Edit Brand - Admin</title>
-</svelte:head>
-
 <AdminPage title="Edit Brand" description={`Editing ${data.brand.name}`}>
   <form onsubmit={handleSubmit}>
     {#if error}
