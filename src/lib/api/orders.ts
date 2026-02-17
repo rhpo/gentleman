@@ -17,6 +17,15 @@ export interface CreateOrderInput {
 	products?: any; // legacy compatibility if needed, but we prefer items
 }
 
+/**
+ * Creates a new order by sending a request to the API.
+ *
+ * This function maps the input to the expected API format, converting `products` to `items` if necessary.
+ * It checks if the `items` array is present; if not, it attempts to use `products` for legacy support.
+ * After preparing the payload, it sends a POST request to the '/api/orders' endpoint and handles any errors that may occur during the request.
+ *
+ * @param input - The input data for creating the order, which may include `products` or `items`.
+ */
 export async function createOrder(input: CreateOrderInput): Promise<OrderRow> {
 	// Map input to API expectation if needed
 	// The API expects `items` array.
