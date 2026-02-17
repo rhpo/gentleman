@@ -111,8 +111,12 @@ export async function getProductsByIds(ids: number[]): Promise<ProductWithBrand[
 }
 
 /**
- * Delete a product by ID
- * Uses the API endpoint to ensure proper cleanup (including image deletion)
+ * Deletes a product by its ID.
+ * This function sends a DELETE request to the API endpoint to remove the product.
+ * It handles the response, throwing an error if the deletion fails,
+ * and ensures that any associated cleanup, such as image deletion, is performed.
+ *
+ * @param {number} id - The ID of the product to be deleted.
  */
 export async function deleteProduct(id: number): Promise<void> {
 	const response = await fetch(`/api/admin/products?id=${id}`, {
