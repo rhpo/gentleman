@@ -92,8 +92,8 @@
 
                   <div class="order-body">
                     <p class="product-count">
-                      {order.products.length}
-                      {order.products.length === 1 ? "item" : "items"}
+                      {order.items.length}
+                      {order.items.length === 1 ? "item" : "items"}
                     </p>
                   </div>
 

@@ -22,7 +22,7 @@ export async function getProducts(
       *,
       brands!products_brand_id_fkey (*)
     `)
-        .order('created_at', { ascending: false });
+        .order('id', { ascending: false });
 
     if (error) throw new Error(error.message);
 

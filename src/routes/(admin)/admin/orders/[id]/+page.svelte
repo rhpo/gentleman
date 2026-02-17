@@ -138,14 +138,19 @@
   }
 
   function calculateTotal(): number {
-    return order.products.reduce((sum, item) => {
+    return order.items.reduce((sum, item) => {
+      // If unit_price is available on item, use it! Prefer captured price.
+      // Otherwise fall back to current product price (for legacy or if missing)
+      if (item.unit_price !== undefined) {
+        return sum + item.unit_price * item.quantity;
+      }
       const product = products.find((p) => p.id === item.product_id);
       return sum + (product?.price || 0) * item.quantity;
     }, 0);
   }
 
   function getTotalItems(): number {
-    return order.products.reduce((sum, item) => sum + item.quantity, 0);
+    return order.items.reduce((sum, item) => sum + item.quantity, 0);
   }
 
   function getProductDisplay(productId: number) {
@@ -253,7 +258,7 @@
             <div class="col-total">Total</div>
           </div>
 
-          {#each order.products as item}
+          {#each order.items as item}
             {@const product = products.find((p) => p.id === item.product_id)}
             <div class="table-row {!product ? 'product-not-found' : ''}">
               {#if product}

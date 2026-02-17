@@ -115,6 +115,32 @@ export interface Database {
                     updated_at?: string;
                 };
             };
+            order_items: {
+                Row: {
+                    order_item_id: number;
+                    order_id: number;
+                    product_id: number;
+                    quantity: number;
+                    unit_price: number;
+                    created_at: string;
+                };
+                Insert: {
+                    order_item_id?: number;
+                    order_id: number;
+                    product_id: number;
+                    quantity: number;
+                    unit_price: number;
+                    created_at?: string;
+                };
+                Update: {
+                    order_item_id?: number;
+                    order_id?: number;
+                    product_id?: number;
+                    quantity?: number;
+                    unit_price?: number;
+                    created_at?: string;
+                };
+            };
             coupons: {
                 Row: {
                     id: number;

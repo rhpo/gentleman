@@ -9,10 +9,12 @@
 <AdminPage title="Admin Dashboard" description="Welcome to your admin panel">
   <div class="navigations">
     {#each ADMIN_NAVIGATION as item}
-      <a class="navigation" href={item.href}>
-        <item.Icon size="32" />
-        <span>{item.title}</span>
-      </a>
+      {#if item.title !== "Dashboard"}
+        <a class="navigation" href={item.href}>
+          <item.Icon size="32" />
+          <span>{item.title}</span>
+        </a>
+      {/if}
     {/each}
   </div>
 

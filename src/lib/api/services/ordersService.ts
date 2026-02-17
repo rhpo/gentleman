@@ -23,14 +23,40 @@ function createSupabaseClient(cookies: Cookies) {
 
 export async function getOrdersServer(cookies: Cookies): Promise<Order[]> {
     const supabase = createSupabaseClient(cookies);
-    const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+    const { data, error } = await supabase
+        .from('orders')
+        .select(`
+            *,
+            items:order_items (
+                order_item_id,
+                product_id,
+                quantity,
+                unit_price,
+                product:products (*)
+            )
+        `)
+        .order('created_at', { ascending: false });
     if (error) throw new Error(error.message);
     return (data || []) as unknown as Order[];
 }
 
 export async function getOrderByIdServer(cookies: Cookies, id: number): Promise<Order | null> {
     const supabase = createSupabaseClient(cookies);
-    const { data, error } = await supabase.from('orders').select('*').eq('id', id).single();
+    const { data, error } = await supabase
+        .from('orders')
+        .select(`
+            *,
+            items:order_items (
+                order_item_id,
+                product_id,
+                quantity,
+                unit_price,
+                product:products (*)
+            )
+        `)
+        .eq('id', id)
+        .single();
+
     if (error) {
         if (error.code === 'PGRST116') return null;
         throw new Error(error.message);
@@ -40,9 +66,49 @@ export async function getOrderByIdServer(cookies: Cookies, id: number): Promise<
 
 export async function createOrderServer(cookies: Cookies, order: OrderInput): Promise<Order> {
     const supabase = createSupabaseClient(cookies);
-    const { data, error } = await (supabase.from('orders') as any).insert([order]).select().single();
-    if (error) throw new Error(error.message);
-    return data as unknown as Order;
+    const { items, ...orderData } = order;
+
+    // 1. Fetch product prices
+    const { data: products, error: productsError } = await supabase
+        .from('products')
+        .select('id, price')
+        .in('id', items.map(i => i.product_id));
+
+    if (productsError) throw new Error(`Failed to fetch product prices: ${productsError.message}`);
+
+    const priceMap = new Map((products as any)?.map((p: any) => [p.id, p.price]));
+
+    // 2. Insert Order
+    const { data: newOrder, error: orderError } = await (supabase.from('orders') as any)
+        .insert([{
+            ...orderData,
+            products: [] // Legacy field
+        }])
+        .select()
+        .single();
+
+    if (orderError) throw new Error(orderError.message);
+
+    // 3. Insert Items
+    const orderItemsData = items.map(item => ({
+        order_id: newOrder.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        unit_price: priceMap.get(item.product_id) ?? 0
+    }));
+
+    const { error: itemsError } = await (supabase.from('order_items') as any)
+        .insert(orderItemsData);
+
+    if (itemsError) {
+        // Cleanup on failure
+        await supabase.from('orders').delete().eq('id', newOrder.id);
+        throw new Error(`Failed to create order items: ${itemsError.message}`);
+    }
+
+    const created = await getOrderByIdServer(cookies, newOrder.id);
+    if (!created) throw new Error('Order created but failed to retrieve');
+    return created;
 }
 
 export async function updateOrderServer(
@@ -51,13 +117,18 @@ export async function updateOrderServer(
     order: Partial<OrderInput>
 ): Promise<Order> {
     const supabase = createSupabaseClient(cookies);
-    const { data, error } = await (supabase.from('orders') as any)
-        .update(order)
-        .eq('id', id)
-        .select()
-        .single();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { items, ...orderData } = order;
+
+    const { error } = await (supabase.from('orders') as any)
+        .update(orderData)
+        .eq('id', id);
+
     if (error) throw new Error(error.message);
-    return data as unknown as Order;
+
+    const updated = await getOrderByIdServer(cookies, id);
+    if (!updated) throw new Error('Failed to retrieve updated order');
+    return updated;
 }
 
 export async function deleteOrderServer(cookies: Cookies, id: number): Promise<void> {

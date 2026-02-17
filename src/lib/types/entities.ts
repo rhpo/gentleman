@@ -68,8 +68,12 @@ export interface BrandInput {
 export type OrderStatus = 'pending' | 'shipped' | 'completed' | 'canceled';
 
 export interface OrderItem {
+    order_item_id?: number; // Optional for input
+    order_id?: number;      // Optional for input
     product_id: number;
     quantity: number;
+    unit_price: number;     // captured at time of order
+    product?: Product;      // joined product data
 }
 
 export interface Order {
@@ -78,7 +82,7 @@ export interface Order {
     phone_number: string;
     address: string;
     wilaya: number;
-    products: OrderItem[];
+    items: OrderItem[];     // Normalized items
     status: OrderStatus;
     created_at: string;
     updated_at: string;
@@ -89,7 +93,10 @@ export interface OrderInput {
     phone_number: string;
     address: string;
     wilaya: number;
-    products: OrderItem[];
+    items: {
+        product_id: number;
+        quantity: number;
+    }[];
     status?: OrderStatus;
 }
 

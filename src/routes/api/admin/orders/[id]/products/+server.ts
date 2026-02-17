@@ -27,37 +27,56 @@ export const GET: RequestHandler = async ({ params, cookies }) => {
         );
 
         // Fetch the order first to get product IDs
+        // Fetch the order (for legacy products JSON)
         const { data: order, error: orderError } = await supabase
             .from('orders')
             .select('products')
             .eq('id', orderId)
             .single() as any;
 
-        if (orderError || !order) {
+        // Fetch new order items
+        const { data: orderItems, error: itemsError } = await supabase
+            .from('order_items')
+            .select('product_id')
+            .eq('order_id', orderId);
+
+        if (orderError && !itemsError) {
+            // If order error but items ok, maybe order doesn't exist?
+            // But items depend on order.
+            // If order fetch fails, likely 404.
             return json({ error: 'Order not found' }, { status: 404 });
         }
 
-        console.log('Order Products Raw:', order.products);
-        let orderProducts = order.products as any[];
+        let productIds: number[] = [];
 
-        // Handle case where products might be a string (JSON column)
-        if (typeof order.products === 'string') {
-            try {
-                orderProducts = JSON.parse(order.products);
-            } catch (e) {
-                console.error('Error parsing order products JSON:', e);
-                orderProducts = [];
+        // 1. Process new order items
+        if (orderItems && orderItems.length > 0) {
+            productIds = orderItems.map((item: any) => item.product_id);
+        }
+
+        // 2. Process legacy products JSON (only if we didn't find items, or maybe merge?)
+        // Let's merge for safety, though usually it's one or the other.
+        if (order?.products) {
+            let legacyProducts = order.products;
+            if (typeof legacyProducts === 'string') {
+                try {
+                    legacyProducts = JSON.parse(legacyProducts);
+                } catch (e) {
+                    console.error('Error parsing legacy products JSON:', e);
+                    legacyProducts = [];
+                }
+            }
+            if (Array.isArray(legacyProducts)) {
+                const legacyIds = legacyProducts.map((item: any) => item.product_id || item.id);
+                productIds = [...new Set([...productIds, ...legacyIds])];
             }
         }
 
-        if (!orderProducts || !Array.isArray(orderProducts) || orderProducts.length === 0) {
-            console.log('No order products found for orderId:', orderId);
+        console.log('Combined Product IDs:', productIds);
+
+        if (productIds.length === 0) {
             return json([]);
         }
-
-        // Extract product IDs from the order
-        const productIds = orderProducts.map((item: any) => item.product_id || item.id);
-        console.log('Mapped Product IDs:', productIds);
 
         // Fetch all product details with brands
         const { data: productDetails, error: productsError } = await supabase

@@ -110,11 +110,18 @@ export async function getProductsByIds(ids: number[]): Promise<ProductWithBrand[
 	return (data || []) as ProductWithBrand[];
 }
 
+/**
+ * Delete a product by ID
+ * Uses the API endpoint to ensure proper cleanup (including image deletion)
+ */
 export async function deleteProduct(id: number): Promise<void> {
-	const { error } = await supabase.from('products').delete().eq('id', id);
+	const response = await fetch(`/api/admin/products?id=${id}`, {
+		method: 'DELETE'
+	});
 
-	if (error) {
-		throw new Error(error.message);
+	if (!response.ok) {
+		const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+		throw new Error(error.error || `Failed to delete product: ${response.status}`);
 	}
 }
 
