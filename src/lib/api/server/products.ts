@@ -11,7 +11,14 @@ import {
 } from '../storage';
 import { STORAGE_BUCKETS } from '$lib/constants/storage';
 /**
- * Get all products with their brand information and image URLs
+ * Retrieves all products along with their associated brand information and image URLs.
+ *
+ * This function queries the 'products' table in the Supabase database, selecting all product fields
+ * and related brand data. The results are ordered by product ID in descending order. If an error occurs
+ * during the query, it throws an error with the message from the Supabase response. The function returns
+ * an array of products, each enriched with brand details.
+ *
+ * @param supabase - An instance of SupabaseClient used to interact with the database.
  */
 export async function getProducts(
     supabase: SupabaseClient<Database>
