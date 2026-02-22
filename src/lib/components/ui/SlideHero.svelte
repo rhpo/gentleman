@@ -12,7 +12,7 @@
 
   let parent = $state<HTMLElement>();
 
-  function updateProgress() {
+  function updateProgress(x?: number) {
     if (!parent) return;
 
     const rect = parent.getBoundingClientRect();
@@ -28,7 +28,10 @@
 
     const scrollProgress = Math.max(0, Math.min(1, rawProgress));
 
-    parent.style.setProperty("--progress", scrollProgress.toString());
+    parent.style.setProperty(
+      "--progress",
+      typeof x === "number" ? x.toString() : scrollProgress.toString(),
+    );
   }
 
   function handleScroll() {
@@ -36,14 +39,14 @@
   }
 
   onMount(() => {
-    updateProgress();
+    updateProgress(0);
     handleScroll();
 
-    window.addEventListener("scroll", updateProgress);
+    window.addEventListener("scroll", () => updateProgress());
     window.addEventListener("scroll", handleScroll);
 
     return () => {
-      window.removeEventListener("scroll", updateProgress);
+      window.removeEventListener("scroll", () => updateProgress());
       window.removeEventListener("scroll", handleScroll);
     };
   });

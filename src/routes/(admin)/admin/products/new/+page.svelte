@@ -236,10 +236,8 @@
             id="brand_id"
             label="Brand"
             brands={data.brands}
-            bind:value={formData.brand_id!}
-            onchange={(e) =>
-              (formData.brand_id =
-                parseInt((e.target as HTMLSelectElement).value) || null)}
+            bind:value={formData.brand_id}
+            bindToId={true}
           />
         </div>
 

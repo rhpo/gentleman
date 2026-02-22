@@ -16,8 +16,9 @@
     id?: string;
     label?: string;
     brands: Brand[];
-    value: string | undefined | null;
-    onchange?: (value: string) => void;
+    value: string | number | undefined | null;
+    onchange?: (value: any) => void;
+    bindToId?: boolean;
   }
 
   let {
@@ -26,19 +27,26 @@
     brands = [],
     value = $bindable(null),
     onchange,
+    bindToId = false,
   }: Props = $props();
 
   let isModalOpen = $state(false);
   let searchQuery = $state("");
 
-  function selectBrand(brandName: string | null) {
-    value = brandName;
+  function selectBrand(brand: Brand | null) {
+    if (!brand) {
+      value = null;
+    } else {
+      value = bindToId ? brand.id : brand.name;
+    }
     isModalOpen = false;
     searchQuery = ""; // Reset search
-    if (onchange) onchange(brandName || "");
+    if (onchange) onchange(value);
   }
 
-  const selectedBrand = $derived(brands.find((b) => b.name === value));
+  const selectedBrand = $derived(
+    brands.find((b) => (bindToId ? b.id === value : b.name === value)),
+  );
 
   const filteredBrands = $derived(
     brands.filter((brand) =>
@@ -127,8 +135,8 @@
       {#each filteredBrands as brand (brand.id)}
         <button
           class="brand-card"
-          class:active={value === brand.name}
-          onclick={() => selectBrand(brand.name)}
+          class:active={bindToId ? value === brand.id : value === brand.name}
+          onclick={() => selectBrand(brand)}
         >
           <div class="brand-logo-container">
             <img src={brand.logo} alt={brand.name} class="brand-logo" />

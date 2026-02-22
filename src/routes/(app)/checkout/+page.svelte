@@ -77,10 +77,11 @@
         phone_number: phoneNumber,
         address: address,
         wilaya: wilaya,
-        products: $cart.items.map((item) => ({
+        items: $cart.items.map((item) => ({
           product_id: item.productId,
           quantity: item.quantity,
-        })) as unknown as Json,
+        })),
+        total_price: $cartTotal.total,
         status: "pending" as const,
       };
 
@@ -117,21 +118,38 @@
       <div class="checkout-content">
         <!-- Checkout Form -->
         <form class="checkout-form" onsubmit={handleSubmit}>
-          <h2>Shipping Information</h2>
+          <h3>{$t.shippingInformation}</h3>
 
           <div class="form-group">
             <label for="name">{$t.customerName} *</label>
-            <input id="name" type="text" bind:value={customerName} required />
+            <input
+              id="name"
+              type="text"
+              placeholder="John Doe..."
+              bind:value={customerName}
+              required
+            />
           </div>
 
           <div class="form-group">
             <label for="phone">{$t.phoneNumber} *</label>
-            <input id="phone" type="tel" bind:value={phoneNumber} required />
+            <input
+              id="phone"
+              type="tel"
+              placeholder="0540123456..."
+              bind:value={phoneNumber}
+              required
+            />
           </div>
 
           <div class="form-group">
             <label for="address">{$t.address} *</label>
-            <textarea id="address" bind:value={address} rows="1" required
+            <textarea
+              id="address"
+              bind:value={address}
+              placeholder="Alger, Exemple rue 123..."
+              rows="1"
+              required
             ></textarea>
           </div>
 
@@ -159,7 +177,7 @@
 
         <!-- Order Summary -->
         <div class="order-summary">
-          <h2>Order Summary</h2>
+          <h3>{$t.orderSummary}</h3>
 
           <div class="summary-items">
             {#each $cart.items as item}
@@ -176,7 +194,7 @@
               <input
                 type="text"
                 bind:value={couponCode}
-                placeholder="Enter code"
+                placeholder="EXAMPLE30"
               />
               <Button type="cta" onclick={handleApplyCoupon} Icon={Percent}>
                 {$t.apply}
@@ -198,7 +216,7 @@
 
             {#if $cart.discount > 0}
               <div class="summary-row discount">
-                <span>Discount ({$cart.discount}%)</span>
+                <span>{$t.discount} ({$cart.discount}%)</span>
                 <span
                   >-{(($cartTotal.subtotal * $cart.discount) / 100).toFixed(2)} DA</span
                 >

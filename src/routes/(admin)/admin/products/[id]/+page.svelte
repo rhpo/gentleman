@@ -2,18 +2,16 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
 
-  import {
-    updateExistingProduct,
-    type ProductInput,
-  } from "$lib/api/admin/products";
+  import { updateExistingProduct } from "$lib/api/admin/products";
 
-  import AdminPage from "$lib/components/AdminPage.svelte";
-  import Button from "$lib/components/ui/Button.svelte";
-  import DragDropZone from "$lib/components/ui/DragDropZone.svelte";
   import Input from "$lib/components/ui/Input.svelte";
+  import Button from "$lib/components/ui/Button.svelte";
   import Select from "$lib/components/ui/Select.svelte";
   import Textarea from "$lib/components/ui/Textarea.svelte";
+  import AdminPage from "$lib/components/AdminPage.svelte";
+  import DragDropZone from "$lib/components/ui/DragDropZone.svelte";
   import BrandSelector from "$lib/components/ui/BrandSelector.svelte";
+
   import type { PageData } from "./$types";
 
   import type {
@@ -24,6 +22,7 @@
     ProductOccasion,
     ProductSize,
     Brand,
+    ProductInput,
   } from "$lib/types/entities";
 
   import { STORAGE_BUCKETS } from "$lib/constants/storage";
@@ -260,11 +259,8 @@
 
         <BrandSelector
           {brands}
-          value={formData.brand_id || null}
-          onchange={(e) => {
-            const selectedValue = (e.target as HTMLSelectElement).value;
-            formData.brand_id = selectedValue ? Number(selectedValue) : null;
-          }}
+          bind:value={formData.brand_id}
+          bindToId={true}
         />
 
         <Textarea

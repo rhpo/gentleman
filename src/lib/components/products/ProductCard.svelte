@@ -6,6 +6,7 @@
   import ProductWithActions from "./ProductWithActions.svelte";
   import type { ProductWithBrand } from "$lib/types/entities";
   import { ShoppingCart } from "@lucide/svelte";
+  import svelteTilt from "vanilla-tilt-svelte";
 
   interface ProductCardProps {
     product: ProductWithBrand;
@@ -28,16 +29,36 @@
   }
 </script>
 
-<ProductWithActions {product}>
-  <Button
-    type="cta"
-    fullWidth
-    onclick={handleAddToCart}
-    Icon={ShoppingCart}
-    iconPosition="left"
-    iconSize={18}
-    disabled={added}
-  >
-    {added ? $t.added : $t.addToCart}
-  </Button>
-</ProductWithActions>
+<main
+  use:svelteTilt={{
+    max: 10,
+    speed: 1000,
+    gyroscopeMaxAngleY: 10,
+    gyroscopeMaxAngleX: 10,
+    glare: true,
+    maxGlare: 1,
+    perspective: 1000,
+    scale: 1.05,
+    transition: true,
+  }}
+>
+  <ProductWithActions {product}>
+    <Button
+      type="cta"
+      fullWidth
+      onclick={handleAddToCart}
+      Icon={ShoppingCart}
+      iconPosition="left"
+      iconSize={18}
+      disabled={added}
+    >
+      {added ? $t.added : ""}
+    </Button>
+  </ProductWithActions>
+</main>
+
+<style>
+  main:hover {
+    z-index: 99;
+  }
+</style>

@@ -5,18 +5,9 @@ import type { Brand } from '$lib/types/entities';
 export type BrandWithCount = Brand & { products_count: number };
 
 /**
- * Get all brands
- */
-export async function getBrands(supabase: SupabaseClient<Database>): Promise<Brand[]> {
-  const { data, error } = await supabase.from("brands").select("*").order("name");
-  if (error) throw new Error(error.message);
-  return (data || []) as unknown as Brand[];
-}
-
-/**
  * Get all brands with product counts
  */
-export async function getBrandsWithCount(supabase: SupabaseClient<Database>): Promise<BrandWithCount[]> {
+export async function getBrands(supabase: SupabaseClient<Database>): Promise<Brand[]> {
 	const { data, error } = await supabase
 		.from('brands')
 		.select('*, products(count)')
@@ -29,7 +20,7 @@ export async function getBrandsWithCount(supabase: SupabaseClient<Database>): Pr
 	return (data as any[] || []).map(brand => ({
 		...brand,
 		products_count: brand.products?.[0]?.count || 0
-	}));
+	})) as Brand[];
 }
 
 /**
@@ -57,7 +48,7 @@ export async function getBrandById(
  */
 import { supabase as defaultSupabase } from '$lib/supabase';
 
-export async function listBrands(): Promise<BrandWithCount[]> {
-	return getBrandsWithCount(defaultSupabase);
+export async function listBrands(): Promise<Brand[]> {
+	return getBrands(defaultSupabase);
 }
 

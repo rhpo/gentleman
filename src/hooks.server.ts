@@ -15,7 +15,12 @@ export const handle: Handle = async ({ event, resolve }) => {
                 getAll: () => event.cookies.getAll(),
                 setAll: (cookiesToSet) => {
                     cookiesToSet.forEach(({ name, value, options }) => {
-                        event.cookies.set(name, value, { ...options, path: '/' });
+                        try {
+                            event.cookies.set(name, value, { ...options, path: '/' });
+                        } catch {
+                            // This can happen if setAll is called after the response has been generated
+                            // (e.g. in a background task or after resolve)
+                        }
                     });
                 }
             }

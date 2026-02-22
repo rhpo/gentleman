@@ -2,7 +2,6 @@
     import { onMount } from "svelte";
     import { wishlist } from "$lib/stores/wishlist";
     import { getProductsByIds } from "$lib/api/products";
-    import type { ProductWithBrand } from "$lib/api/products";
     import ProductCard from "$lib/components/products/ProductCard.svelte";
     import MainPage from "$lib/components/ui/MainPage.svelte";
     import { t } from "$lib/i18n/translations";
@@ -10,6 +9,8 @@
     import Button from "$lib/components/ui/Button.svelte";
     import { goto } from "$app/navigation";
     import { ShoppingCart } from "@lucide/svelte";
+    import type { ProductWithBrand } from "$lib/types/entities";
+    import { supabase } from "$lib/supabase";
 
     let products: ProductWithBrand[] = $state([]);
     let loading = $state(true);
@@ -23,7 +24,7 @@
 
         try {
             loading = true;
-            products = await getProductsByIds(ids);
+            products = await getProductsByIds(supabase, ids);
         } catch (error) {
             console.error("Error loading wishlist products:", error);
         } finally {

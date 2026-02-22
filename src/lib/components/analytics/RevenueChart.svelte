@@ -41,6 +41,9 @@
             pointBackgroundColor: "#10b981",
             pointBorderColor: "#fff",
             pointBorderWidth: 2,
+            animation: {
+              duration: 3000,
+            },
           },
         ],
       },
@@ -75,7 +78,7 @@
               },
             },
             grid: {
-              display: false,
+              display: true,
             },
             ticks: {
               color: "#9ca3af",
@@ -88,8 +91,7 @@
             },
             ticks: {
               color: "#9ca3af",
-              callback: (value) =>
-                `${((value as number) / 1000).toFixed(0)}k DZD`,
+              callback: (value) => `${value.toLocaleString()} DZD`,
             },
           },
         },

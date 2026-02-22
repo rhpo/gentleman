@@ -2,6 +2,16 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database';
 import type { Order, OrderInput } from '$lib/types/entities';
 
+function transformOrder(order: any): Order {
+    return {
+        ...order,
+        total_price: (order.items || []).reduce(
+            (sum: number, item: any) => sum + (item.unit_price * item.quantity),
+            0
+        )
+    } as Order;
+}
+
 /**
  * Get all orders
  */
@@ -19,8 +29,10 @@ export async function getOrders(supabase: SupabaseClient<Database>): Promise<Ord
             )
         `)
         .order('created_at', { ascending: false });
+
     if (error) throw new Error(error.message);
-    return (data || []) as unknown as Order[];
+
+    return (data || []).map(transformOrder);
 }
 
 /**
@@ -46,7 +58,10 @@ export async function getOrderById(supabase: SupabaseClient<Database>, id: numbe
         if (error.code === 'PGRST116') return null;
         throw new Error(error.message);
     }
-    return (data || null) as unknown as Order | null;
+
+    if (!data) return null;
+
+    return transformOrder(data);
 }
 
 /**

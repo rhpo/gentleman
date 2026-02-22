@@ -14,9 +14,20 @@
     <div class="footer-section">
       <h4>{$t.gender}</h4>
       <ul>
-        <li><a href="/products?gender=men">{$t.forMen}</a></li>
-        <li><a href="/products?gender=women">{$t.forWomen}</a></li>
-        <li><a href="/products?gender=mixture">{$t.forMixture}</a></li>
+        <li><a href="/products?gender=Men">{$t.forMen}</a></li>
+        <li><a href="/products?gender=Women">{$t.forWomen}</a></li>
+        <li><a href="/products?gender=Unisex">{$t.forMixture}</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-section">
+      <h4>{$t.occasions}</h4>
+      <ul>
+        <li><a href="/products?occasion=Everyday">{$t.everyday}</a></li>
+        <li><a href="/products?occasion=Evening">{$t.evening}</a></li>
+        <li><a href="/products?occasion=Romantic">{$t.romantic}</a></li>
+        <li><a href="/products?occasion=Sport">{$t.sport}</a></li>
+        <li><a href="/products?occasion=Luxury">{$t.luxury}</a></li>
       </ul>
     </div>
 
@@ -100,17 +111,17 @@
     opacity: 0.8;
   }
 
-  [data-theme="dark"] footer {
+  :global([data-theme="dark"]) footer {
     background-color: var(--color-bg);
     color: var(--color-text);
     border-top: 1px solid var(--color-border);
   }
 
-  [data-theme="dark"] .footer-section a {
+  :global([data-theme="dark"]) .footer-section a {
     color: var(--color-text);
   }
 
-  [data-theme="dark"] .footer-bottom {
+  :global([data-theme="dark"]) .footer-bottom {
     border-top: 1px solid var(--color-border);
   }
 </style>

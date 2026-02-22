@@ -14,6 +14,13 @@ export interface ProductFilters {
 	brand?: string;
 }
 
+function transformProduct(p: any): ProductWithBrand {
+	return {
+		...p,
+		brand: p.brands?.name
+	} as ProductWithBrand;
+}
+
 /**
  * Get all products matching filters
  */
@@ -31,7 +38,13 @@ export async function getProducts(
 	}
 
 	if (filters.type) query = query.eq('type', filters.type);
-	if (filters.gender) query = query.eq('gender', filters.gender);
+	if (filters.gender) {
+		if (filters.gender === 'Men' || filters.gender === 'Women') {
+			query = query.in('gender', [filters.gender, 'Unisex']);
+		} else {
+			query = query.eq('gender', filters.gender);
+		}
+	}
 	if (filters.scentFamily) query = query.eq('scent_family', filters.scentFamily);
 	if (filters.occasion) query = query.eq('occasion', filters.occasion);
 
@@ -58,7 +71,7 @@ export async function getProducts(
 		throw new Error(error.message);
 	}
 
-	return (data || []) as ProductWithBrand[];
+	return (data || []).map(transformProduct);
 }
 
 /**
@@ -79,7 +92,7 @@ export async function getProductById(
 		throw new Error(error.message);
 	}
 
-	return data as unknown as ProductWithBrand;
+	return transformProduct(data);
 }
 
 /**
@@ -100,7 +113,7 @@ export async function getProductsByIds(
 		throw new Error(error.message);
 	}
 
-	return (data || []) as ProductWithBrand[];
+	return (data || []).map(transformProduct);
 }
 
 /**

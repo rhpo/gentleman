@@ -6,7 +6,11 @@ import { getOrders, getOrderById } from '../orders';
 export { getOrders, getOrderById };
 
 export async function createOrder(supabase: SupabaseClient<Database>, order: OrderInput): Promise<Order> {
-    const { items, ...orderData } = order;
+    const { items, total_price, ...orderData } = order;
+
+    if (!items || !Array.isArray(items)) {
+        throw new Error('Order items are required');
+    }
 
     // 1. Fetch product prices for consistency
     const { data: products, error: productsError } = await supabase
@@ -62,7 +66,7 @@ export async function updateOrder(
 ): Promise<Order> {
     // Separate items from order data
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { items, ...orderData } = order;
+    const { items, total_price, ...orderData } = order;
 
     // Update order details (status, etc)
     const { error } = await (supabase.from('orders') as any)

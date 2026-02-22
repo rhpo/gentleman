@@ -53,13 +53,19 @@
 
       {#if data.filters?.gender}
         <div class="title-wrapper">
-          {#if data.filters?.gender === "Men"}
-            <h1 class="text-center">{$t.forMen}</h1>
-          {:else if data.filters?.gender === "Women"}
-            <h1 class="text-center">{$t.forWomen}</h1>
-          {:else if data.filters?.gender === "Unisex"}
-            <h1 class="text-center">{$t.forMixture}</h1>
-          {/if}
+          <h1 class="text-center">
+            {#if data.filters?.gender === "Men"}
+              {$t.forMen}
+            {:else if data.filters?.gender === "Women"}
+              {$t.forWomen}
+            {:else if data.filters?.gender === "Unisex"}
+              {$t.forMixture}
+            {/if}
+
+            {#if data.filters?.occasion}
+              {data.filters?.occasion}
+            {/if}
+          </h1>
         </div>
       {/if}
 
@@ -135,7 +141,7 @@
         </div>
       {:else}
         <div class="products-grid">
-          {#each data.products as product (product.id)}
+          {#each [...data.products, ...data.products] as product}
             <ProductCard {product} />
           {/each}
         </div>

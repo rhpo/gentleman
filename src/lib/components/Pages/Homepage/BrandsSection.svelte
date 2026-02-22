@@ -1,5 +1,6 @@
 <script lang="ts">
-    import type { Brand } from "$lib/api/brands";
+    import type { Brand } from "$lib/types/entities";
+    import HeroSection from "$lib/components/ui/HeroSection.svelte";
     import emblaCarouselSvelte from "embla-carousel-svelte";
     import AutoScroll from "embla-carousel-auto-scroll";
     import { brandSection } from "$lib/i18n/brands";
@@ -20,52 +21,41 @@
     ];
 </script>
 
-<section class="brands-section section">
-    <div class="container">
-        <h2 class="section-title text-center">{$brandSection.title}</h2>
-        <p class="section-description text-center">
-            {$brandSection.description}
-        </p>
-        <div class="embla">
-            <div
-                class="embla__viewport"
-                use:emblaCarouselSvelte={{ options, plugins }}
-            >
-                <div class="embla__container">
-                    {#each [...brands, ...brands, ...brands] as brand}
-                        <div class="embla__slide">
-                            <a
-                                href="/products?brand={encodeURIComponent(
-                                    brand.name,
-                                )}"
-                                class="brand-item"
-                            >
-                                <img
-                                    src={brand.logo}
-                                    alt={brand.name}
-                                    class="brand-image"
-                                />
-                            </a>
-                        </div>
-                    {/each}
-                </div>
+<HeroSection
+    title={$brandSection.title}
+    description={$brandSection.description}
+    class="brands-section"
+>
+    <div class="embla">
+        <div
+            class="embla__viewport"
+            use:emblaCarouselSvelte={{ options, plugins }}
+        >
+            <div class="embla__container">
+                {#each [...brands, ...brands, ...brands] as brand}
+                    <div class="embla__slide">
+                        <a
+                            href="/products?brand={encodeURIComponent(
+                                brand.name,
+                            )}"
+                            class="brand-item"
+                        >
+                            <img
+                                src={brand.logo}
+                                alt={brand.name}
+                                class="brand-image"
+                            />
+                        </a>
+                    </div>
+                {/each}
             </div>
         </div>
     </div>
-</section>
+</HeroSection>
 
 <style>
-    .brands-section {
-        padding: var(--spacing-xl) 0;
-        overflow: hidden;
-    }
-
-    .section-title {
-        margin-bottom: var(--spacing-sm);
-    }
-
-    .section-description {
-        margin-bottom: var(--spacing-lg);
+    :global(.brands-section) {
+        overflow: hidden !important;
     }
 
     .embla {
@@ -101,13 +91,13 @@
     }
 
     .brand-item {
-        height: 100px;
+        height: 12°px;
         display: flex;
         align-items: center;
         justify-content: center;
         transition: all 0.3s ease;
         text-decoration: none;
-        padding: 0 var(--spacing-lg);
+        padding: 0.5rem var(--spacing-lg);
         user-select: none;
     }
 

@@ -136,8 +136,13 @@ export interface Translations {
     selectBrand: string;
 
     allBrands: string;
-
+    occasions: string;
     featuredProducts: string;
+    trendingDescription: string;
+    wishlistDescription: string;
+    shippingInformation: string;
+    orderSummary: string;
+    discount: string;
 }
 
 export const t = derived<typeof language, Translations>(
@@ -148,7 +153,12 @@ export const t = derived<typeof language, Translations>(
 export const translations: Record<Language, Translations> = {
 
     fr: {
+        shippingInformation: 'Informations de livraison',
+        orderSummary: 'Résumé de la commande',
+        discount: 'Réduction',
         featuredProducts: 'En Tendance',
+        trendingDescription: 'Une sélection exclusive de nos fragrances les plus convoitées, redéfinies pour l’homme moderne.',
+        wishlistDescription: 'Gardez une trace des parfums qui parlent à votre âme. Votre collection personnelle commence ici.',
         cartDescription: "Découvrez nos parfums, montres et lunettes de luxe",
         allBrands: "Toutes les marques",
         selectBrand: "Choisir une marque",
@@ -160,6 +170,7 @@ export const translations: Record<Language, Translations> = {
         searchProducts: 'Rechercher des produits',
         contact: 'Contact',
         categories: 'Catégories',
+        occasions: 'Occasions',
         home: 'Accueil',
         products: 'Produits',
         cart: 'Panier',
@@ -259,7 +270,12 @@ export const translations: Record<Language, Translations> = {
         allRightsReserved: 'Tous droits réservés'
     },
     en: {
-        featuredProducts: 'Trending',
+        shippingInformation: 'Shipping Information',
+        orderSummary: 'Order Summary',
+        discount: 'Discount',
+        featuredProducts: 'Trending Now',
+        trendingDescription: 'Curated selections of our most sought-after fragrances, redefined for the modern gentleman.',
+        wishlistDescription: 'Keep track of the scents that speak to your soul. Your personal collection starts here.',
 
         cartDescription: "Discover our luxury perfumes, watches, and sunglasses",
         allBrands: "All Brands",
@@ -272,6 +288,7 @@ export const translations: Record<Language, Translations> = {
         searchProducts: 'Search products',
         contact: 'Contact',
         categories: 'Categories',
+        occasions: 'Occasions',
         home: 'Home',
         products: 'Products',
         cart: 'Cart',
@@ -372,7 +389,12 @@ export const translations: Record<Language, Translations> = {
         allRightsReserved: 'All rights reserved',
     },
     ar: {
-        featuredProducts: 'المنتجات الرائجة',
+        shippingInformation: 'معلومات الشحن',
+        orderSummary: 'ملخص الطلب',
+        discount: 'خصم',
+        featuredProducts: 'المنتجات الأكثر رواجاً',
+        trendingDescription: 'مجموعة مختارة بعناية من أكثر عطورنا طلباً، أعيد تعريفها لتناسب الرجل العصري.',
+        wishlistDescription: 'تتبع العطور التي تحاكي روحك. مجموعتك الشخصية تبدأ من هنا.',
         cartDescription: "اكتشف عطورنا الفاخرة وساعاتنا ونظاراتنا الشمسية",
         allBrands: "جميع العلامات التجارية",
         selectBrand: "اختر علامة تجارية",
@@ -384,6 +406,7 @@ export const translations: Record<Language, Translations> = {
         searchProducts: 'بحث عن منتجات',
         contact: 'اتصل بنا',
         categories: 'التصنيفات',
+        occasions: 'المناسبات',
         home: 'الرئيسية',
         products: 'المنتجات',
         cart: 'السلة',

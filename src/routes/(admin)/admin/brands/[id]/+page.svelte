@@ -10,7 +10,10 @@
   import Textarea from "$lib/components/ui/Textarea.svelte";
   import AdminPage from "$lib/components/AdminPage.svelte";
   import DragDropZone from "$lib/components/ui/DragDropZone.svelte";
-  import { updateExistingBrand } from "$lib/api/admin/brands";
+  import {
+    deleteExistingBrand,
+    updateExistingBrand,
+  } from "$lib/api/admin/brands";
 
   const UPLOAD_ENDPOINT = "/api/upload";
 

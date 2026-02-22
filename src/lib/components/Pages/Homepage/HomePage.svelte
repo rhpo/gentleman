@@ -1,15 +1,20 @@
 <script lang="ts">
   import Button from "$lib/components/ui/Button.svelte";
   import SlideHero from "$lib/components/ui/SlideHero.svelte";
+  import HeroSection from "$lib/components/ui/HeroSection.svelte";
   import ProductCard from "$lib/components/products/ProductCard.svelte";
+  import ProductsCarousel from "$lib/components/products/ProductsCarousel.svelte";
   import BrandsSection from "./BrandsSection.svelte";
 
-  import { Heart, ShoppingBag } from "@lucide/svelte";
   import { homepage } from "$lib/i18n/pages/homepage";
+  import { Heart, ShoppingBag } from "@lucide/svelte";
 
-  import { wishlist } from "$lib/stores/wishlist";
-  import { getProductsByIds, type ProductWithBrand } from "$lib/api/products";
   import { t } from "$lib/i18n/translations";
+  import { supabase } from "$lib/supabase";
+  import { wishlist } from "$lib/stores/wishlist";
+  import { getProductsByIds } from "$lib/api/products";
+
+  import type { ProductWithBrand } from "$lib/types/entities";
 
   interface IProps {
     data: any;
@@ -24,7 +29,7 @@
       return;
     }
     try {
-      likedProducts = await getProductsByIds(ids);
+      likedProducts = await getProductsByIds(supabase, ids);
     } catch (error) {
       console.error("Error loading liked products for homepage:", error);
     }
@@ -53,7 +58,9 @@
       </div>
     </SlideHero>
 
-    {#each $homepage.slides.slice(1) as slide}
+    <BrandsSection brands={data.brands} />
+
+    {#each $homepage.slides as slide}
       <SlideHero media={slide.image}>
         <div class="hero">
           <h2>{slide.title}</h2>
@@ -64,7 +71,7 @@
 
           {#if slide.button}
             <Button
-              href="/products?category=parfum"
+              href={slide.button_href || "/products?category=parfum"}
               type="secondary"
               autoWidth
               Icon={ShoppingBag}
@@ -77,61 +84,38 @@
     {/each}
   </section>
 
-  <BrandsSection brands={data.brands} />
+  <HeroSection
+    title={$t.featuredProducts}
+    description={$t.trendingDescription}
+    class="featured-section"
+  >
+    <ProductsCarousel products={data.featuredProducts} />
+  </HeroSection>
 
-  <section class="featured-section section">
-    <div class="container">
-      <h2 class="section-title text-center text-uppercase">
-        {$t.featuredProducts}
-      </h2>
+  {#if likedProducts.length > 0}
+    <HeroSection
+      title={$t.yourWishlist}
+      description={$t.wishlistDescription}
+      class="wishlist-section"
+    >
       <div class="products-grid">
-        {#each data.featuredProducts as product}
+        {#each likedProducts.slice(0, 3) as product (product.id)}
           <ProductCard {product} />
         {/each}
       </div>
-    </div>
-  </section>
 
-  {#if likedProducts.length > 0}
-    <section class="wishlist-section section">
-      <div class="container">
-        <h2 class="section-title text-center text-uppercase">
+      <div class="wishlist-action text-center">
+        <Button href="/wishlist" type="cta" autoWidth Icon={Heart}>
           {$t.yourWishlist}
-        </h2>
-        <div class="products-grid">
-          {#each likedProducts as product (product.id)}
-            <ProductCard {product} />
-          {/each}
-        </div>
+        </Button>
       </div>
-    </section>
+    </HeroSection>
   {/if}
-
-  <SlideHero media={$homepage.slides[0].image}>
-    <div class="hero">
-      <h2>{$homepage.slides[0].title}</h2>
-
-      {#if $homepage.slides[0].description}
-        <p>{$homepage.slides[0].description}</p>
-      {/if}
-
-      {#if $homepage.slides[0].button}
-        <Button
-          href="/products?category=parfum"
-          type="secondary"
-          autoWidth
-          Icon={ShoppingBag}
-          color="white"
-          colorHover="black">{$homepage.slides[0].button}</Button
-        >
-      {/if}
-    </div>
-  </SlideHero>
 </main>
 
 <style>
-  .wishlist-section {
-    padding-top: 0;
+  .wishlist-action {
+    margin-top: var(--spacing-md);
   }
 
   .heroes {
@@ -157,16 +141,6 @@
     max-width: 50rem;
     color: white;
     text-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-  }
-
-  .featured-section {
-    background-color: var(--color-bg);
-  }
-
-  .section-title {
-    font-size: clamp(2rem, 5vw, 3rem);
-    margin-bottom: var(--spacing-lg);
-    letter-spacing: 0.2em;
   }
 
   .products-grid {
