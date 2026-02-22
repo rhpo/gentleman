@@ -71,14 +71,14 @@ const data: Readable<Record<Language, Translation>> =
                 {
                     title: 'Parfums pour Homme',
                     description: "L'élégance et la force dans chaque flacon.",
-                    image: '/media/men-perfume.jpg',
+                    image: '/media/men.jpg',
                     button: 'Acheter pour Homme',
                     button_href: '/products?gender=Men',
                 },
                 {
                     title: 'Parfums pour Femme',
                     description: 'Sophistication et grâce pour la femme moderne.',
-                    image: '/media/women-perfume.jpg',
+                    image: '/media/women.jpg',
                     button: 'Acheter pour Femme',
                     button_href: '/products?gender=Women',
                 },
@@ -105,14 +105,14 @@ const data: Readable<Record<Language, Translation>> =
                 {
                     title: 'عطور للرجال',
                     description: 'الأناقة والقوة في كل زجاجة.',
-                    image: '/media/men-perfume.jpg',
+                    image: '/media/men.jpg',
                     button: 'تسوق للرجال',
                     button_href: '/products?gender=Men',
                 },
                 {
                     title: 'عطور للنساء',
                     description: 'الرقي والجمال للمرأة العصرية.',
-                    image: '/media/women-perfume.jpg',
+                    image: '/media/women.jpg',
                     button: 'تسوق للنساء',
                     button_href: '/products?gender=Women',
                 },
