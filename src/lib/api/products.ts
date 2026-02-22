@@ -14,6 +14,9 @@ export interface ProductFilters {
 	brand?: string;
 }
 
+/**
+ * Transforms a product by adding the brand name.
+ */
 function transformProduct(p: any): ProductWithBrand {
 	return {
 		...p,
@@ -96,7 +99,15 @@ export async function getProductById(
 }
 
 /**
- * Get multiple products by IDs
+ * Get multiple products by IDs.
+ *
+ * This function retrieves products from the Supabase database based on the provided array of IDs.
+ * It first checks if the IDs array is empty, returning an empty array if so.
+ * It then queries the 'products' table, including related brand information, and handles any errors that may occur during the fetch.
+ * Finally, it transforms the retrieved product data using the transformProduct function before returning the result.
+ *
+ * @param supabase - The Supabase client used to interact with the database.
+ * @param ids - An array of product IDs to fetch from the database.
  */
 export async function getProductsByIds(
     supabase: SupabaseClient<Database>,
