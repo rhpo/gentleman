@@ -107,6 +107,15 @@
         direction: ltr;
     }
 
+    :global([data-theme="dark"]) .dropdown {
+        background: rgba(20, 20, 20, 0.9);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    :global([data-theme="dark"]) .dropdown * {
+        color: white !important;
+    }
+
     .dropdown[data-align="right"] {
         right: 0;
         left: auto;
