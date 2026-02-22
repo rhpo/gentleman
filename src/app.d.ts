@@ -5,6 +5,7 @@ declare global {
 		// interface Error {}
 		interface Locals {
 			supabase: import('@supabase/supabase-js').SupabaseClient<import('$lib/types/database').Database>;
+			supabaseAdmin: import('@supabase/supabase-js').SupabaseClient<import('$lib/types/database').Database>;
 		}
 		// interface PageData {}
 		// interface PageState {}

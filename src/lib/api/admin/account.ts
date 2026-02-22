@@ -1,5 +1,4 @@
-import { createServerClient } from '@supabase/ssr';
-import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database';
 
 export interface AdminLoginInput {
@@ -12,23 +11,14 @@ export interface AdminLoginResult {
 	message?: string;
 }
 
-export async function serverLogin(cookies: any, input: AdminLoginInput): Promise<AdminLoginResult> {
-	const supabaseServer = createServerClient<Database>(
-		PUBLIC_SUPABASE_URL,
-		PUBLIC_SUPABASE_ANON_KEY,
-		{
-			cookies: {
-				getAll: () => cookies.getAll(),
-				setAll: (cookiesToSet: any) => {
-					cookiesToSet.forEach(({ name, value, options }: any) => {
-						cookies.set(name, value, { ...options, path: '/' });
-					});
-				}
-			}
-		}
-	);
-
-	const { data, error } = await supabaseServer.auth.signInWithPassword({
+/**
+ * Perform login using the provided supabase client
+ */
+export async function serverLogin(
+	supabase: SupabaseClient<Database>,
+	input: AdminLoginInput
+): Promise<AdminLoginResult> {
+	const { error } = await supabase.auth.signInWithPassword({
 		email: input.email,
 		password: input.password
 	});
@@ -43,23 +33,11 @@ export async function serverLogin(cookies: any, input: AdminLoginInput): Promise
 	};
 }
 
-export async function serverCheckAuth(cookies: any): Promise<boolean> {
-	const supabaseServer = createServerClient<Database>(
-		PUBLIC_SUPABASE_URL,
-		PUBLIC_SUPABASE_ANON_KEY,
-		{
-			cookies: {
-				getAll: () => cookies.getAll(),
-				setAll: (cookiesToSet: any) => {
-					cookiesToSet.forEach(({ name, value, options }: any) => {
-						cookies.set(name, value, { ...options, path: '/' });
-					});
-				}
-			}
-		}
-	);
-
-	const { data: { session } } = await supabaseServer.auth.getSession();
+/**
+ * Check auth session using the provided supabase client
+ */
+export async function serverCheckAuth(supabase: SupabaseClient<Database>): Promise<boolean> {
+	const { data: { session } } = await supabase.auth.getSession();
 	return !!session;
 }
 

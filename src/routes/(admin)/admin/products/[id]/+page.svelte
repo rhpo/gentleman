@@ -1,10 +1,12 @@
 <!-- Edit Product Page -->
 <script lang="ts">
   import { goto } from "$app/navigation";
+
   import {
     updateExistingProduct,
     type ProductInput,
   } from "$lib/api/admin/products";
+
   import AdminPage from "$lib/components/AdminPage.svelte";
   import Button from "$lib/components/ui/Button.svelte";
   import DragDropZone from "$lib/components/ui/DragDropZone.svelte";
@@ -13,6 +15,7 @@
   import Textarea from "$lib/components/ui/Textarea.svelte";
   import BrandSelector from "$lib/components/ui/BrandSelector.svelte";
   import type { PageData } from "./$types";
+
   import type {
     ProductType,
     ProductCategory,
@@ -22,6 +25,7 @@
     ProductSize,
     Brand,
   } from "$lib/types/entities";
+
   import { STORAGE_BUCKETS } from "$lib/constants/storage";
   import {
     TYPE_OPTIONS,

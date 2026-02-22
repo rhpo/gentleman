@@ -1,13 +1,8 @@
-import { supabase } from '$lib/supabase';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database';
+import type { ProductWithBrand } from '$lib/types/entities';
 
 type ProductRow = Database['public']['Tables']['products']['Row'];
-
-type BrandRow = Database['public']['Tables']['brands']['Row'];
-
-export interface ProductWithBrand extends ProductRow {
-	brands?: Pick<BrandRow, 'name' | 'logo'> | null;
-}
 
 export interface ProductFilters {
 	query?: string;
@@ -21,9 +16,11 @@ export interface ProductFilters {
 
 /**
  * Get all products matching filters
- * Images are now stored as URLs in Supabase Storage
  */
-export async function listProducts(filters: ProductFilters = {}): Promise<ProductWithBrand[]> {
+export async function getProducts(
+    supabase: SupabaseClient<Database>,
+    filters: ProductFilters = {}
+): Promise<ProductWithBrand[]> {
 	let query = supabase
 		.from('products')
 		.select('*, brands!inner(name, logo)');
@@ -33,21 +30,10 @@ export async function listProducts(filters: ProductFilters = {}): Promise<Produc
 		query = query.or(`name.ilike.${q},description.ilike.${q},type.ilike.${q},category.ilike.${q},gender.ilike.${q},scent_family.ilike.${q},occasion.ilike.${q}`);
 	}
 
-	if (filters.type) {
-		query = query.eq('type', filters.type);
-	}
-
-	if (filters.gender) {
-		query = query.eq('gender', filters.gender);
-	}
-
-	if (filters.scentFamily) {
-		query = query.eq('scent_family', filters.scentFamily);
-	}
-
-	if (filters.occasion) {
-		query = query.eq('occasion', filters.occasion);
-	}
+	if (filters.type) query = query.eq('type', filters.type);
+	if (filters.gender) query = query.eq('gender', filters.gender);
+	if (filters.scentFamily) query = query.eq('scent_family', filters.scentFamily);
+	if (filters.occasion) query = query.eq('occasion', filters.occasion);
 
 	if (filters.size) {
 		const sizeVal = Number(filters.size);
@@ -66,20 +52,22 @@ export async function listProducts(filters: ProductFilters = {}): Promise<Produc
 		query = query.eq('brands.name', filters.brand);
 	}
 
-	const { data, error } = await query;
+	const { data, error } = await query.order('id', { ascending: false });
 
 	if (error) {
 		throw new Error(error.message);
 	}
 
-	// Images are already URLs from the database
 	return (data || []) as ProductWithBrand[];
 }
 
 /**
  * Get a single product by ID
  */
-export async function getProductById(id: number): Promise<ProductWithBrand | null> {
+export async function getProductById(
+    supabase: SupabaseClient<Database>,
+    id: number
+): Promise<ProductWithBrand | null> {
 	const { data, error } = await supabase
 		.from('products')
 		.select('*, brands(name, logo)')
@@ -91,11 +79,16 @@ export async function getProductById(id: number): Promise<ProductWithBrand | nul
 		throw new Error(error.message);
 	}
 
-	// Images are already URLs from the database
 	return data as unknown as ProductWithBrand;
 }
 
-export async function getProductsByIds(ids: number[]): Promise<ProductWithBrand[]> {
+/**
+ * Get multiple products by IDs
+ */
+export async function getProductsByIds(
+    supabase: SupabaseClient<Database>,
+    ids: number[]
+): Promise<ProductWithBrand[]> {
 	if (!ids.length) return [];
 
 	const { data, error } = await supabase
@@ -111,17 +104,19 @@ export async function getProductsByIds(ids: number[]): Promise<ProductWithBrand[
 }
 
 /**
- * Delete a product by ID
- * Uses the API endpoint to ensure proper cleanup (including image deletion)
+ * Client-side wrappers using the default supabase client
  */
-export async function deleteProduct(id: number): Promise<void> {
-	const response = await fetch(`/api/admin/products?id=${id}`, {
-		method: 'DELETE'
-	});
+import { supabase as defaultSupabase } from '$lib/supabase';
 
-	if (!response.ok) {
-		const error = await response.json().catch(() => ({ error: 'Unknown error' }));
-		throw new Error(error.error || `Failed to delete product: ${response.status}`);
-	}
+export async function listProducts(filters: ProductFilters = {}): Promise<ProductWithBrand[]> {
+	return getProducts(defaultSupabase, filters);
+}
+
+export async function getProductByIdClient(id: number): Promise<ProductWithBrand | null> {
+	return getProductById(defaultSupabase, id);
+}
+
+export async function getProductsByIdsClient(ids: number[]): Promise<ProductWithBrand[]> {
+	return getProductsByIds(defaultSupabase, ids);
 }
 

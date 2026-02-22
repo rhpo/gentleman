@@ -1,61 +1,24 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database';
-import type { Product, ProductWithBrand, ProductInput } from '$lib/types/entities';
+import type { Product, ProductInput } from '$lib/types/entities';
+import { getProducts, getProductById } from '../products';
+import { uploadFile, deleteFile } from '../storage.server';
 import {
-    uploadFile,
-    deleteFile,
     generateProductImagePath,
     dataUriToUint8Array,
     getMimeType,
     extractPathFromUrl
 } from '../storage';
 import { STORAGE_BUCKETS } from '$lib/constants/storage';
-/**
- * Get all products with their brand information and image URLs
- */
-export async function getProducts(
-    supabase: SupabaseClient<Database>
-): Promise<ProductWithBrand[]> {
-    const { data, error } = await supabase
-        .from('products')
-        .select(`
-      *,
-      brands!products_brand_id_fkey (*)
-    `)
-        .order('id', { ascending: false });
 
-    if (error) throw new Error(error.message);
-
-    // Images are already URLs from the database
-    return (data || []) as ProductWithBrand[];
-}
-
-/**
- * Get a single product by ID
- */
-export async function getProductById(
-    supabase: SupabaseClient<Database>,
-    id: number
-): Promise<ProductWithBrand | null> {
-    const { data, error } = await supabase
-        .from('products')
-        .select('*, brands!products_brand_id_fkey (*)')
-        .eq('id', id)
-        .single();
-
-    if (error) {
-        if (error.code === 'PGRST116') return null;
-        throw new Error(error.message);
-    }
-
-    return data as unknown as ProductWithBrand;
-}
+export { getProducts, getProductById };
 
 /**
  * Create a new product with image upload to Supabase Storage
  */
 export async function createProduct(
     supabase: SupabaseClient<Database>,
+    supabaseAdmin: SupabaseClient<Database>,
     product: ProductInput
 ): Promise<Product> {
     let imageUrl = '';
@@ -77,7 +40,7 @@ export async function createProduct(
             const imageBytes = dataUriToUint8Array(product.image);
             const mimeType = getMimeType('product.jpg');
 
-            imageUrl = await uploadFile(STORAGE_BUCKETS.PRODUCT_IMAGES, imagePath, imageBytes, mimeType);
+            imageUrl = await uploadFile(supabaseAdmin, STORAGE_BUCKETS.PRODUCT_IMAGES, imagePath, imageBytes, mimeType);
 
             if (!imageUrl) {
                 throw new Error('No URL returned from image upload');
@@ -120,6 +83,7 @@ export async function createProduct(
  */
 export async function updateProduct(
     supabase: SupabaseClient<Database>,
+    supabaseAdmin: SupabaseClient<Database>,
     id: number,
     product: Partial<ProductInput>
 ): Promise<Product> {
@@ -140,7 +104,7 @@ export async function updateProduct(
                 const imageBytes = dataUriToUint8Array(product.image);
                 const mimeType = getMimeType('product.jpg');
 
-                imageUrl = await uploadFile(STORAGE_BUCKETS.PRODUCT_IMAGES, imagePath, imageBytes, mimeType);
+                imageUrl = await uploadFile(supabaseAdmin, STORAGE_BUCKETS.PRODUCT_IMAGES, imagePath, imageBytes, mimeType);
             } catch (err) {
                 throw new Error(`Failed to upload image: ${err instanceof Error ? err.message : 'Unknown error'}`);
             }
@@ -171,7 +135,11 @@ export async function updateProduct(
 /**
  * Delete a product (and its image)
  */
-export async function deleteProduct(supabase: SupabaseClient<Database>, id: number): Promise<void> {
+export async function deleteProduct(
+    supabase: SupabaseClient<Database>,
+    supabaseAdmin: SupabaseClient<Database>,
+    id: number
+): Promise<void> {
     // Get the product to find image path
     const { data: productData } = await supabase.from('products').select('image').eq('id', id).single();
 
@@ -183,7 +151,7 @@ export async function deleteProduct(supabase: SupabaseClient<Database>, id: numb
     if ((productData as any)?.image) {
         const imagePath = extractPathFromUrl((productData as any).image);
         if (imagePath) {
-            await deleteFile(STORAGE_BUCKETS.PRODUCT_IMAGES, imagePath).catch((err: unknown) => {
+            await deleteFile(supabaseAdmin, STORAGE_BUCKETS.PRODUCT_IMAGES, imagePath).catch((err: unknown) => {
                 console.error('Failed to delete product image:', err);
             });
         }

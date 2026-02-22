@@ -1,7 +1,7 @@
 <!-- Create Product Page -->
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { createNewProduct } from "$lib/api/client/products";
+  import { createNewProduct } from "$lib/api/admin/products";
   import AdminPage from "$lib/components/AdminPage.svelte";
   import Button from "$lib/components/ui/Button.svelte";
   import Input from "$lib/components/ui/Input.svelte";

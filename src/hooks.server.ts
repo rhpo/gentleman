@@ -1,9 +1,12 @@
 import { createServerClient } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import type { Handle } from '@sveltejs/kit';
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
+import { SUPABASE_SERVICE_ROLE_KEY } from '$env/static/private';
 import type { Database } from '$lib/types/database';
 
 export const handle: Handle = async ({ event, resolve }) => {
+    // Standard user client
     event.locals.supabase = createServerClient<Database>(
         PUBLIC_SUPABASE_URL,
         PUBLIC_SUPABASE_ANON_KEY,
@@ -17,6 +20,12 @@ export const handle: Handle = async ({ event, resolve }) => {
                 }
             }
         }
+    );
+
+    // Elevated admin client
+    event.locals.supabaseAdmin = createClient<Database>(
+        PUBLIC_SUPABASE_URL,
+        SUPABASE_SERVICE_ROLE_KEY
     );
 
     return resolve(event);

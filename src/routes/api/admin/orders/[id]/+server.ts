@@ -1,13 +1,12 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { supabase } from '$lib/supabase';
 
 interface OrderProduct {
     product_id: number;
     quantity: number;
 }
 
-export const GET: RequestHandler = async ({ params }) => {
+export const GET: RequestHandler = async ({ params, locals }) => {
     try {
         const orderId = Number(params.id);
         if (isNaN(orderId)) {
@@ -15,7 +14,7 @@ export const GET: RequestHandler = async ({ params }) => {
         }
 
         // Fetch the order first to get product IDs
-        const { data: order, error: orderError } = await supabase
+        const { data: order, error: orderError } = await locals.supabase
             .from('orders')
             .select('products')
             .eq('id', orderId)
@@ -34,7 +33,7 @@ export const GET: RequestHandler = async ({ params }) => {
         const productIds = orderProducts.map((item: OrderProduct) => item.product_id);
 
         // Fetch all product details with brands
-        const { data: productDetails, error: productsError } = await supabase
+        const { data: productDetails, error: productsError } = await locals.supabase
             .from('products')
             .select('*, brands(id, name, logo)')
             .in('id', productIds);

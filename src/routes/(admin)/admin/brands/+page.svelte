@@ -1,13 +1,15 @@
 <!-- Admin Brands Management -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import { listBrands, deleteExistingBrand } from "$lib/api/admin/brands";
   import AdminPage from "$lib/components/AdminPage.svelte";
   import Button from "$lib/components/ui/Button.svelte";
   import BrandCard from "$lib/components/BrandCard.svelte";
 
   import type { Brand } from "$lib/types/entities";
   import { Plus } from "@lucide/svelte";
+
+  import { listBrands } from "$lib/api/admin/brands";
+  import { deleteExistingBrand } from "$lib/api/admin/brands";
 
   let brands = $state<Brand[]>([]);
   let isLoading = $state(true);

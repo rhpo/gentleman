@@ -1,12 +1,7 @@
 <!-- Admin Coupons Management -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import {
-    listCoupons,
-    createNewCoupon,
-    updateExistingCoupon,
-    deleteExistingCoupon,
-  } from "$lib/api/admin/coupons";
+
   import AdminPage from "$lib/components/AdminPage.svelte";
   import Button from "$lib/components/ui/Button.svelte";
   import Modal from "$lib/components/ui/Modal.svelte";
@@ -14,6 +9,12 @@
   import { Trash2, Edit, Plus } from "@lucide/svelte";
 
   import type { Coupon, CouponInput } from "$lib/types/entities";
+  import {
+    createNewCoupon,
+    deleteExistingCoupon,
+    listCoupons,
+    updateExistingCoupon,
+  } from "$lib/api/admin/coupons";
 
   let coupons = $state<Coupon[]>([]);
   let isLoading = $state(true);
@@ -228,24 +229,6 @@
 </Modal>
 
 <style>
-  .admin-section {
-    padding: var(--spacing-md);
-  }
-
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--spacing-lg);
-  }
-
-  .section-header h1 {
-    font-family: var(--font-heading);
-    letter-spacing: 0.2em;
-    font-size: 1.5rem;
-    margin: 0;
-  }
-
   .loading,
   .empty-state {
     padding: var(--spacing-xl);

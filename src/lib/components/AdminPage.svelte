@@ -21,6 +21,7 @@
     <div class="header">
       <div class="info">
         <h1>{title}</h1>
+
         {#if description}
           <p class="description">{description}</p>
         {/if}

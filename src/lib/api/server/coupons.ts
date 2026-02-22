@@ -1,21 +1,16 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database';
 import type { Coupon, CouponInput } from '$lib/types/entities';
+import {
+    getCoupons,
+    getCouponById,
+    findActiveCouponByCode,
+    validateCoupon,
+    type ValidCouponResult
+} from '../coupons';
 
-export async function getCoupons(supabase: SupabaseClient<Database>): Promise<Coupon[]> {
-    const { data, error } = await supabase.from('coupons').select('*').order('created_at', { ascending: false });
-    if (error) throw new Error(error.message);
-    return (data || []) as unknown as Coupon[];
-}
-
-export async function getCouponById(supabase: SupabaseClient<Database>, id: number): Promise<Coupon | null> {
-    const { data, error } = await supabase.from('coupons').select('*').eq('id', id).single();
-    if (error) {
-        if (error.code === 'PGRST116') return null;
-        throw new Error(error.message);
-    }
-    return (data || null) as unknown as Coupon | null;
-}
+export { getCoupons, getCouponById, findActiveCouponByCode, validateCoupon };
+export type { ValidCouponResult };
 
 export async function createCoupon(supabase: SupabaseClient<Database>, coupon: CouponInput): Promise<Coupon> {
     const { data, error } = await (supabase.from('coupons') as any).insert([coupon]).select().single();

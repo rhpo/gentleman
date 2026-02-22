@@ -1,43 +1,66 @@
-import { supabase } from '$lib/supabase';
-import type { Database, Json } from '$lib/types/database';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Database } from '$lib/types/database';
+import type { Order, OrderInput } from '$lib/types/entities';
 
-export type OrderRow = Database['public']['Tables']['orders']['Row'];
-export type NewOrder = Database['public']['Tables']['orders']['Insert'];
-
-export interface CreateOrderInput {
-	customer_name: string;
-	phone_number: string;
-	address: string;
-	wilaya: number;
-	items: {
-		product_id: number;
-		quantity: number;
-	}[];
-	status?: string;
-	products?: any; // legacy compatibility if needed, but we prefer items
+/**
+ * Get all orders
+ */
+export async function getOrders(supabase: SupabaseClient<Database>): Promise<Order[]> {
+    const { data, error } = await supabase
+        .from('orders')
+        .select(`
+            *,
+            items:order_items (
+                order_item_id,
+                product_id,
+                quantity,
+                unit_price,
+                product:products (*)
+            )
+        `)
+        .order('created_at', { ascending: false });
+    if (error) throw new Error(error.message);
+    return (data || []) as unknown as Order[];
 }
 
-export async function createOrder(input: CreateOrderInput): Promise<OrderRow> {
-	// Map input to API expectation if needed
-	// The API expects `items` array.
-	// If input has `products` (JSON), we assume caller is outdated or passing legacy.
-	// But we defined `items` in type now.
+/**
+ * Get order by ID
+ */
+export async function getOrderById(supabase: SupabaseClient<Database>, id: number): Promise<Order | null> {
+    const { data, error } = await supabase
+        .from('orders')
+        .select(`
+            *,
+            items:order_items (
+                order_item_id,
+                product_id,
+                quantity,
+                unit_price,
+                product:products (*)
+            )
+        `)
+        .eq('id', id)
+        .single();
 
-	// Check if input has items, if not use products as items (legacy conversion)
-	let payload = { ...input };
-	if (!payload.items && input.products && Array.isArray(input.products)) {
-		payload.items = input.products.map((p: any) => ({
-			product_id: p.product_id,
-			quantity: p.quantity
-		}));
-	}
+    if (error) {
+        if (error.code === 'PGRST116') return null;
+        throw new Error(error.message);
+    }
+    return (data || null) as unknown as Order | null;
+}
 
+/**
+ * Client-side wrappers
+ */
+import { supabase as defaultSupabase } from '$lib/supabase';
+
+export async function createOrder(input: OrderInput): Promise<Order> {
 	const response = await fetch('/api/orders', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'
 		},
-		body: JSON.stringify(payload)
+		body: JSON.stringify(input)
 	});
 
 	if (!response.ok) {
@@ -48,16 +71,7 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderRow> {
 	return response.json();
 }
 
-export async function listOrders(): Promise<OrderRow[]> {
-	const { data, error } = await supabase
-		.from('orders')
-		.select('*')
-		.order('created_at', { ascending: false });
-
-	if (error) {
-		throw new Error(error.message);
-	}
-
-	return data || [];
+export async function listOrders(): Promise<Order[]> {
+    return getOrders(defaultSupabase);
 }
 

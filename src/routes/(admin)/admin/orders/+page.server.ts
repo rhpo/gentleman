@@ -1,9 +1,9 @@
-import type { LayoutServerLoad } from './$types';
-import { getOrdersServer } from '$lib/api/services/ordersService';
+import type { PageServerLoad } from './$types';
+import { getOrders } from '$lib/api/server/orders';
 
-export const load: LayoutServerLoad = async ({ cookies }) => {
+export const load: PageServerLoad = async ({ locals }) => {
     try {
-        const orders = await getOrdersServer(cookies);
+        const orders = await getOrders(locals.supabase);
         return {
             orders
         };

@@ -2,7 +2,6 @@
   import type { BrandInput } from "$lib/types/entities";
 
   import { goto } from "$app/navigation";
-  import { createNewBrand } from "$lib/api/admin/brands";
   import { STORAGE_BUCKETS } from "$lib/constants/storage";
 
   import Input from "$lib/components/ui/Input.svelte";
@@ -10,6 +9,7 @@
   import Textarea from "$lib/components/ui/Textarea.svelte";
   import AdminPage from "$lib/components/AdminPage.svelte";
   import DragDropZone from "$lib/components/ui/DragDropZone.svelte";
+  import { createNewBrand } from "$lib/api/admin/brands";
 
   const UPLOAD_ENDPOINT = "/api/upload";
 

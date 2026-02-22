@@ -2,10 +2,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import AdminPage from "$lib/components/AdminPage.svelte";
-  import {
-    updateExistingOrder,
-    deleteExistingOrder,
-  } from "$lib/api/admin/orders";
 
   import type {
     Order,
@@ -13,6 +9,10 @@
     ProductWithBrand,
   } from "$lib/types/entities";
   import { goto } from "$app/navigation";
+  import {
+    deleteExistingOrder,
+    updateExistingOrder,
+  } from "$lib/api/admin/orders";
 
   interface Props {
     data: { order: Order };

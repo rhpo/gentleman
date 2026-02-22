@@ -1,9 +1,4 @@
 <script lang="ts">
-  import {
-    updateExistingBrand,
-    deleteExistingBrand,
-  } from "$lib/api/admin/brands";
-
   import { goto } from "$app/navigation";
   import { STORAGE_BUCKETS } from "$lib/constants/storage";
 
@@ -15,6 +10,7 @@
   import Textarea from "$lib/components/ui/Textarea.svelte";
   import AdminPage from "$lib/components/AdminPage.svelte";
   import DragDropZone from "$lib/components/ui/DragDropZone.svelte";
+  import { updateExistingBrand } from "$lib/api/admin/brands";
 
   const UPLOAD_ENDPOINT = "/api/upload";
 

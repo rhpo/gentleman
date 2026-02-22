@@ -1,11 +1,12 @@
 <!-- Admin Orders Management -->
 <script lang="ts">
   import { onMount } from "svelte";
-  import { listOrders } from "$lib/api/admin/orders";
+
   import AdminPage from "$lib/components/AdminPage.svelte";
   import Button from "$lib/components/ui/Button.svelte";
 
   import type { Order, OrderStatus } from "$lib/types/entities";
+  import { listOrders } from "$lib/api/admin/orders";
 
   let orders = $state<Order[]>([]);
   let isLoading = $state(true);

@@ -1,19 +1,19 @@
 <!-- Admin Navigation Bar -->
 <script lang="ts">
-  import { page } from "$app/state";
   import { goto } from "$app/navigation";
   import { brands } from "$lib/i18n/brand";
   import { supabase } from "$lib/supabase";
   import { ADMIN_NAVIGATION } from "$lib/admin/constants/navigation";
   import { LogOut, Moon, Sun } from "@lucide/svelte";
   import { theme, toggleTheme } from "$lib/stores/theme";
+  import { page } from "$app/stores";
 
   import View from "./ui/View.svelte";
   import IconButton from "$lib/components/ui/IconButton.svelte";
 
   function isActive(href: string): boolean {
     return (
-      page.url.pathname === href || page.url.pathname.startsWith(href + "/")
+      $page.url.pathname === href || $page.url.pathname.startsWith(href + "/")
     );
   }
 

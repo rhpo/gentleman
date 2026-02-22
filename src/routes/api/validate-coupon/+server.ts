@@ -1,9 +1,9 @@
 // Checkout API - Validate coupon
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { validateCoupon } from '$lib/api/coupons';
+import { validateCoupon } from '$lib/api/server/coupons';
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
     try {
         const { code } = await request.json();
 
@@ -11,7 +11,7 @@ export const POST: RequestHandler = async ({ request }) => {
             return json({ error: 'Invalid coupon code' }, { status: 400 });
         }
 
-        const result = await validateCoupon(code);
+        const result = await validateCoupon(locals.supabase, code);
 
         return json({
             valid: result.valid,

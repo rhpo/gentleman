@@ -68,12 +68,12 @@ export interface BrandInput {
 export type OrderStatus = 'pending' | 'shipped' | 'completed' | 'canceled';
 
 export interface OrderItem {
-    order_item_id?: number; // Optional for input
-    order_id?: number;      // Optional for input
+    order_item_id?: number;
+    order_id?: number;
     product_id: number;
     quantity: number;
-    unit_price: number;     // captured at time of order
-    product?: Product;      // joined product data
+    unit_price: number;
+    product?: ProductWithBrand;
 }
 
 export interface Order {
@@ -82,7 +82,9 @@ export interface Order {
     phone_number: string;
     address: string;
     wilaya: number;
-    items: OrderItem[];     // Normalized items
+    items: OrderItem[];     // Normalized (joined from order_items)
+    products: any;          // Legacy (JSON column in orders table)
+    total_price: number;
     status: OrderStatus;
     created_at: string;
     updated_at: string;
@@ -97,6 +99,7 @@ export interface OrderInput {
         product_id: number;
         quantity: number;
     }[];
+    total_price: number;
     status?: OrderStatus;
 }
 
@@ -105,6 +108,7 @@ export interface Coupon {
     id: number;
     code: string;
     reduction_percent: number;
+    reduction_amount: number; // Legacy/Optional
     valid_from: string;
     valid_until: string;
     active: boolean;
@@ -114,6 +118,7 @@ export interface Coupon {
 export interface CouponInput {
     code: string;
     reduction_percent: number;
+    reduction_amount?: number;
     valid_from: string;
     valid_until: string;
     active?: boolean;

@@ -1,11 +1,11 @@
 import type { PageServerLoad } from './$types';
-import { getOrdersServer } from '$lib/api/services/ordersService';
+import { getOrders } from '$lib/api/server/orders';
 import * as productService from '$lib/api/server/products';
 
-export const load: PageServerLoad = async ({ locals, cookies }) => {
+export const load: PageServerLoad = async ({ locals }) => {
     try {
         const [orders, products] = await Promise.all([
-            getOrdersServer(cookies),
+            getOrders(locals.supabase),
             productService.getProducts(locals.supabase)
         ]);
 
@@ -19,12 +19,14 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
         const currentMonth = now.getMonth();
         const currentYear = now.getFullYear();
 
-        // Helper to calculate order total
-        const calculateOrderTotal = (orderProducts: any[]) => {
-            return orderProducts.reduce((total: number, item: any) => {
-                const product = productMap.get(item.product_id);
-                // Fallback to item.price if available, otherwise use current product price, otherwise 0
-                const price = product?.price || item.price || 0;
+        // Helper to calculate order total from items
+        const calculateOrderTotal = (order: any) => {
+            if (order.total_price) return order.total_price;
+
+            const items = order.items || order.products || [];
+            return items.reduce((total: number, item: any) => {
+                // Priority: item.unit_price > item.price > productMap.get(item.product_id)?.price
+                const price = item.unit_price || item.price || productMap.get(item.product_id)?.price || 0;
                 return total + (price * item.quantity);
             }, 0);
         };
@@ -40,7 +42,7 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
             });
 
             const revenue = monthOrders.reduce((sum: number, order: any) => {
-                return sum + calculateOrderTotal(order.products);
+                return sum + calculateOrderTotal(order);
             }, 0);
 
             return {
@@ -68,7 +70,8 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
         const productSales: Record<string, number> = {};
         orders.forEach((order: any) => {
             if (order.status !== 'canceled') {
-                order.products.forEach((item: any) => {
+                const items = order.items || order.products || [];
+                items.forEach((item: any) => {
                     const product = productMap.get(item.product_id);
                     const productName = product?.name || item.name || 'Unknown';
                     productSales[productName] = (productSales[productName] || 0) + item.quantity;
@@ -92,8 +95,6 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
             });
 
             // Track unique customers by phone number
-            const uniqueCustomers = new Set(monthOrders.map((o: any) => o.phone_number));
-
             // Simple heuristic: customers with multiple orders are "returning"
             const customerOrderCounts: Record<string, number> = {};
             orders.forEach((order: any) => {
@@ -125,14 +126,15 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
         const totalRevenue = orders
             .filter((order: any) => order.status !== 'canceled')
             .reduce((sum: number, order: any) => {
-                return sum + calculateOrderTotal(order.products);
+                return sum + calculateOrderTotal(order);
             }, 0);
 
         const totalOrders = orders.length;
         const totalProductsSold = orders
             .filter((order: any) => order.status !== 'canceled')
             .reduce((sum: number, order: any) => {
-                return sum + order.products.reduce((total: number, item: any) =>
+                const items = order.items || order.products || [];
+                return sum + items.reduce((total: number, item: any) =>
                     total + item.quantity, 0);
             }, 0);
 
@@ -154,13 +156,13 @@ export const load: PageServerLoad = async ({ locals, cookies }) => {
         const lastMonthRevenue = lastMonthOrders
             .filter((order: any) => order.status !== 'canceled')
             .reduce((sum: number, order: any) => {
-                return sum + calculateOrderTotal(order.products);
+                return sum + calculateOrderTotal(order);
             }, 0);
 
         const twoMonthsAgoRevenue = twoMonthsAgoOrders
             .filter((order: any) => order.status !== 'canceled')
             .reduce((sum: number, order: any) => {
-                return sum + calculateOrderTotal(order.products);
+                return sum + calculateOrderTotal(order);
             }, 0);
 
         const revenueChange = twoMonthsAgoRevenue > 0

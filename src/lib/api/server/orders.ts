@@ -1,47 +1,9 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database';
 import type { Order, OrderInput } from '$lib/types/entities';
+import { getOrders, getOrderById } from '../orders';
 
-export async function getOrders(supabase: SupabaseClient<Database>): Promise<Order[]> {
-    const { data, error } = await supabase
-        .from('orders')
-        .select(`
-            *,
-            items:order_items (
-                order_item_id,
-                product_id,
-                quantity,
-                unit_price,
-                product:products (*)
-            )
-        `)
-        .order('created_at', { ascending: false });
-    if (error) throw new Error(error.message);
-    return (data || []) as unknown as Order[];
-}
-
-export async function getOrderById(supabase: SupabaseClient<Database>, id: number): Promise<Order | null> {
-    const { data, error } = await supabase
-        .from('orders')
-        .select(`
-            *,
-            items:order_items (
-                order_item_id,
-                product_id,
-                quantity,
-                unit_price,
-                product:products (*)
-            )
-        `)
-        .eq('id', id)
-        .single();
-
-    if (error) {
-        if (error.code === 'PGRST116') return null;
-        throw new Error(error.message);
-    }
-    return (data || null) as unknown as Order | null;
-}
+export { getOrders, getOrderById };
 
 export async function createOrder(supabase: SupabaseClient<Database>, order: OrderInput): Promise<Order> {
     const { items, ...orderData } = order;

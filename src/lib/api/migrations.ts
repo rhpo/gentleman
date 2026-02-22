@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { getSupabaseAdmin, STORAGE_BUCKETS, deleteFile } from './storage';
+import { STORAGE_BUCKETS } from '$lib/constants/storage';
+import type { Database } from '$lib/types/database';
 
 /**
  * Migration helper to move existing base64 images from database to Supabase Storage
@@ -7,7 +8,8 @@ import { getSupabaseAdmin, STORAGE_BUCKETS, deleteFile } from './storage';
  */
 
 export async function migrateProductImagesToStorage(
-    supabase: SupabaseClient<any>
+    supabase: SupabaseClient<Database>,
+    supabaseAdmin: SupabaseClient<Database>
 ): Promise<{ products: number; brands: number; errors: string[] }> {
     const errors: string[] = [];
     let productCount = 0;
@@ -46,7 +48,7 @@ export async function migrateProductImagesToStorage(
                 }
 
                 const path = `products/${p.id}-migrated-${Date.now()}.jpg`;
-                const admin = getSupabaseAdmin();
+                const admin = supabaseAdmin;
                 const { data, error } = await admin.storage
                     .from(STORAGE_BUCKETS.PRODUCT_IMAGES)
                     .upload(path, imageBytes, { contentType: 'image/jpeg', upsert: false });
@@ -101,7 +103,7 @@ export async function migrateProductImagesToStorage(
                 }
 
                 const path = `brands/${b.id}-migrated-${Date.now()}.jpg`;
-                const admin = getSupabaseAdmin();
+                const admin = supabaseAdmin;
                 const { data, error } = await admin.storage
                     .from(STORAGE_BUCKETS.BRAND_LOGOS)
                     .upload(path, logoBytes, { contentType: 'image/jpeg', upsert: false });

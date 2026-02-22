@@ -1,9 +1,9 @@
-import type { LayoutServerLoad } from './$types';
-import { getCouponsServer } from '$lib/api/services/couponsService';
+import type { PageServerLoad } from './$types';
+import { getCoupons } from '$lib/api/server/coupons';
 
-export const load: LayoutServerLoad = async ({ cookies }) => {
+export const load: PageServerLoad = async ({ locals }) => {
     try {
-        const coupons = await getCouponsServer(cookies);
+        const coupons = await getCoupons(locals.supabase);
         return {
             coupons
         };

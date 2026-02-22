@@ -1,7 +1,6 @@
-import { supabase } from '$lib/supabase';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database';
-
-export type Coupon = Database['public']['Tables']['coupons']['Row'];
+import type { Coupon } from '$lib/types/entities';
 
 export interface ValidCouponResult {
 	valid: true;
@@ -9,7 +8,34 @@ export interface ValidCouponResult {
 	coupon: Coupon;
 }
 
-export async function findActiveCouponByCode(code: string): Promise<Coupon | null> {
+/**
+ * Get all coupons
+ */
+export async function getCoupons(supabase: SupabaseClient<Database>): Promise<Coupon[]> {
+    const { data, error } = await supabase.from('coupons').select('*').order('created_at', { ascending: false });
+    if (error) throw new Error(error.message);
+    return (data || []) as unknown as Coupon[];
+}
+
+/**
+ * Get coupon by ID
+ */
+export async function getCouponById(supabase: SupabaseClient<Database>, id: number): Promise<Coupon | null> {
+    const { data, error } = await supabase.from('coupons').select('*').eq('id', id).single();
+    if (error) {
+        if (error.code === 'PGRST116') return null;
+        throw new Error(error.message);
+    }
+    return (data || null) as unknown as Coupon | null;
+}
+
+/**
+ * Find active coupon by code
+ */
+export async function findActiveCouponByCode(
+    supabase: SupabaseClient<Database>,
+    code: string
+): Promise<Coupon | null> {
 	const normalized = code.toUpperCase();
 
 	const { data, error } = await supabase
@@ -27,8 +53,14 @@ export async function findActiveCouponByCode(code: string): Promise<Coupon | nul
 	return data || null;
 }
 
-export async function validateCoupon(code: string): Promise<ValidCouponResult> {
-	const coupon = await findActiveCouponByCode(code);
+/**
+ * Validate a coupon
+ */
+export async function validateCoupon(
+    supabase: SupabaseClient<Database>,
+    code: string
+): Promise<ValidCouponResult> {
+	const coupon = await findActiveCouponByCode(supabase, code);
 
 	if (!coupon) {
 		throw new Error('Coupon not found');
@@ -47,5 +79,18 @@ export async function validateCoupon(code: string): Promise<ValidCouponResult> {
 		discount: coupon.reduction_percent,
 		coupon
 	};
+}
+
+/**
+ * Client-side wrappers using default supabase client
+ */
+import { supabase as defaultSupabase } from '$lib/supabase';
+
+export async function findActiveCouponByCodeClient(code: string) {
+    return findActiveCouponByCode(defaultSupabase, code);
+}
+
+export async function validateCouponClient(code: string) {
+    return validateCoupon(defaultSupabase, code);
 }
 
