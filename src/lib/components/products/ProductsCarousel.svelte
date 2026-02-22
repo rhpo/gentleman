@@ -5,6 +5,7 @@
     import Autoplay from "embla-carousel-autoplay";
     import WheelGestures from "embla-carousel-wheel-gestures";
     import { ChevronLeft, ChevronRight } from "@lucide/svelte";
+    import { browser } from "$app/environment";
 
     interface IProps {
         products: ProductWithBrand[];
@@ -18,16 +19,21 @@
     let scrollSnaps = $state<number[]>([]);
 
     const options = { loop: true, align: "start" as const, skipSnaps: false };
-    const plugins = $derived([
-        Autoplay({
-            delay,
-            stopOnInteraction: false,
-            stopOnMouseEnter: true,
-        }),
-        WheelGestures({
-            forceWheelAxis: "x",
-        }),
-    ]);
+
+    const plugins = $derived(
+        browser
+            ? [
+                  Autoplay({
+                      delay,
+                      stopOnInteraction: false,
+                      stopOnMouseEnter: true,
+                  }),
+                  WheelGestures({
+                      forceWheelAxis: "x",
+                  }),
+              ]
+            : [],
+    );
 
     const onInit = (event: any) => {
         emblaApi = event.detail;
