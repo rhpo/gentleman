@@ -5,6 +5,19 @@ import { getOrders, getOrderById } from '../orders';
 
 export { getOrders, getOrderById };
 
+/**
+ * Create a new order in the database.
+ *
+ * This function validates the order input, fetches product prices for the items, inserts the order into the database,
+ * and then inserts the corresponding order items. If any step fails, it handles errors appropriately, including
+ * rolling back the order creation if order items insertion fails. Finally, it retrieves and returns the full order details.
+ *
+ * @param supabase - The Supabase client instance used for database operations.
+ * @param order - The order input containing items and total price.
+ * @returns The created order with all details.
+ * @throws Error If order items are missing, product price fetching fails, order insertion fails,
+ *               order items insertion fails, or if the created order cannot be retrieved.
+ */
 export async function createOrder(supabase: SupabaseClient<Database>, order: OrderInput): Promise<Order> {
     const { items, total_price, ...orderData } = order;
 
