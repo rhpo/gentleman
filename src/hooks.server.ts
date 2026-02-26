@@ -5,6 +5,9 @@ import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/publi
 import { SUPABASE_SERVICE_ROLE_KEY } from '$env/static/private';
 import type { Database } from '$lib/types/database';
 
+/**
+ * Handles the event by creating standard and elevated Supabase clients.
+ */
 export const handle: Handle = async ({ event, resolve }) => {
     // Standard user client
     event.locals.supabase = createServerClient<Database>(
