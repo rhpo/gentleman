@@ -3,7 +3,6 @@
   import { Crown, Heart, Mars, Venus } from "@lucide/svelte";
   import { wishlist, toggleWishlist, isInWishlist } from "$lib/stores/wishlist";
   import { t } from "$lib/i18n/translations";
-
   import { extractColors } from "extract-colors";
 
   interface ProductWithActionsProps {
@@ -15,6 +14,15 @@
 
   let dominantColor = $state("rgba(0,0,0,0.15)");
 
+  // Variant helpers
+  let variants = $derived(
+    (product.variants ?? []).slice().sort((a, b) => a.size - b.size)
+  );
+  let hasVariants = $derived(variants.length > 0);
+  let displayPrice = $derived(
+    hasVariants ? Math.min(...variants.map((v) => v.price)) : product.price
+  );
+
   function getGenderLabel(gender: string) {
     if (gender === "Men") return $t.men;
     if (gender === "Women") return $t.women;
@@ -23,19 +31,11 @@
 
   async function handleColorExtract(img: HTMLImageElement) {
     try {
-      // use extract‑colors library on proxied image src
       const colors = await extractColors(img.src, {
-        // filter out near‑white
-        colorValidator: (
-          r: number,
-          g: number,
-          b: number,
-          alpha: number = 255,
-        ) => alpha > 250 && !(r > 220 && g > 220 && b > 220),
+        colorValidator: (r: number, g: number, b: number, alpha: number = 255) =>
+          alpha > 250 && !(r > 220 && g > 220 && b > 220),
         distance: 0.2,
       });
-
-      // pick the first/extracted dominant
       if (colors && colors.length > 0) {
         const c = colors[0];
         dominantColor = `rgba(${c.red},${c.green},${c.blue},0.5)`;
@@ -57,18 +57,15 @@
           alt={product.name}
           loading="lazy"
           class="main-image"
-          onload={(e) =>
-            handleColorExtract(e.currentTarget as HTMLImageElement)}
+          onload={(e) => handleColorExtract(e.currentTarget as HTMLImageElement)}
         />
         <div class="image-overlay"></div>
       </a>
 
       {#if product.gender}
         <span class="category-badge">
-          {#if product.gender === "Men"}<Mars
-              size={12}
-            />{:else if product.gender === "Women"}<Venus
-              size={12}
+          {#if product.gender === "Men"}<Mars size={12}
+            />{:else if product.gender === "Women"}<Venus size={12}
             />{:else}<Crown size={12} />{/if}
           {getGenderLabel(product.gender)}
         </span>
@@ -76,14 +73,10 @@
 
       <div class="top-left-badges">
         {#if product.occasion}
-          <span class="etiquette">
-            {product.occasion}
-          </span>
+          <span class="etiquette">{product.occasion}</span>
         {/if}
         {#if product.scent_family}
-          <span class="etiquette">
-            {product.scent_family}
-          </span>
+          <span class="etiquette">{product.scent_family}</span>
         {/if}
       </div>
 
@@ -102,7 +95,16 @@
     <div class="product-details">
       <div class="details-header">
         {#if product.brand}<div class="brand-label">{product.brand}</div>{/if}
-        {#if product.size}<div class="size-badge">{product.size}ml</div>{/if}
+        <!-- Show size pills for variant products, single size badge otherwise -->
+        {#if hasVariants}
+          <div class="variant-sizes">
+            {#each variants as v}
+              <span class="size-pill">{v.size}ml</span>
+            {/each}
+          </div>
+        {:else if product.size}
+          <div class="size-badge">{product.size}ml</div>
+        {/if}
       </div>
 
       <h3 class="product-title">
@@ -110,13 +112,14 @@
       </h3>
 
       {#if product.description}
-        <p class="description-preview">
-          {product.description}
-        </p>
+        <p class="description-preview">{product.description}</p>
       {/if}
 
       <div class="product-info-grid">
-        <div class="price-tag">{product.price.toLocaleString()} DA</div>
+        <div class="price-tag">
+          {#if hasVariants}<span class="from-label">from&nbsp;</span>{/if}
+          {displayPrice.toLocaleString()} DA
+        </div>
       </div>
       <div class="actions-container">
         {#if children}{@render children()}{/if}
@@ -136,7 +139,6 @@
     overflow: hidden;
   }
 
-  /* soft fading gradient glow */
   .product-card-premium::after {
     content: "";
     position: absolute;
@@ -156,37 +158,25 @@
     z-index: 1;
   }
 
-  /* Image Section */
-
   .image-container {
     position: relative;
-
     width: 100%;
-
     aspect-ratio: 6 / 7;
-
     overflow: hidden;
-
     background-color: var(--color-card-bg);
   }
 
   .image-link {
     display: block;
-
     width: 100%;
-
     height: 100%;
-
     position: relative;
   }
 
   .main-image {
     width: 100%;
-
     height: 100%;
-
     object-fit: cover;
-
     transition: transform var(--transition-slow);
   }
 
@@ -196,23 +186,12 @@
 
   .image-overlay {
     position: absolute;
-
     top: 0;
-
     left: 0;
-
     width: 100%;
-
     height: 100%;
-
-    background: linear-gradient(
-      to bottom,
-      transparent 60%,
-      rgba(0, 0, 0, 0.05)
-    );
-
+    background: linear-gradient(to bottom, transparent 60%, rgba(0, 0, 0, 0.05));
     opacity: 0;
-
     transition: opacity var(--transition-medium);
   }
 
@@ -270,56 +249,37 @@
 
   .wishlist-btn {
     position: absolute;
-
     bottom: var(--spacing-sm);
-
     right: var(--spacing-sm);
-
     background: white;
-
     width: 40px;
-
     height: 40px;
-
     border-radius: 50%;
-
     display: flex;
-
     align-items: center;
-
     justify-content: center;
-
     color: var(--color-black);
-
     opacity: 0;
-
     transform: translateY(10px);
-
     transition: all var(--transition-medium);
-
     box-shadow: var(--shadow-sm);
-
     z-index: 2;
   }
 
   .product-card-premium:hover .wishlist-btn {
     opacity: 1;
-
     transform: translateY(0);
   }
 
   .wishlist-btn:hover,
   .wishlist-btn.is-liked {
     background: var(--color-black);
-
     color: white;
   }
 
   .wishlist-btn.is-liked {
     opacity: 1;
-
     transform: translateY(0);
-
     color: #ff4444;
   }
 
@@ -336,6 +296,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 2px;
+    gap: 0.5rem;
   }
 
   .brand-label {
@@ -351,6 +312,23 @@
     font-size: 0.7rem;
     background: var(--color-card-bg);
     padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    flex-shrink: 0;
+  }
+
+  .variant-sizes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+    flex-shrink: 0;
+  }
+
+  .size-pill {
+    font-size: 0.65rem;
+    background: var(--color-card-bg);
+    padding: 0.1rem 0.35rem;
     border-radius: 4px;
     color: var(--color-text-secondary);
     border: 1px solid var(--color-border);
@@ -392,10 +370,17 @@
 
   .price-tag {
     display: flex;
+    align-items: baseline;
     color: var(--color-accent);
     font-weight: 700;
     font-size: 1.1rem;
     letter-spacing: -0.01em;
+  }
+
+  .from-label {
+    font-size: 0.75rem;
+    font-weight: 400;
+    opacity: 0.7;
   }
 
   .actions-container {

@@ -12,48 +12,52 @@ export async function createOrder(supabase: SupabaseClient<Database>, order: Ord
         throw new Error('Order items are required');
     }
 
-    // 1. Fetch product prices for consistency
+    // Fetch product base prices
+    const productIds = [...new Set(items.map(i => i.product_id))];
     const { data: products, error: productsError } = await supabase
         .from('products')
         .select('id, price')
-        .in('id', items.map(i => i.product_id));
+        .in('id', productIds);
 
     if (productsError) throw new Error(`Failed to fetch product prices: ${productsError.message}`);
+    const productPriceMap = new Map((products as any[]).map((p: any) => [p.id, Number(p.price)]));
 
-    const priceMap = new Map((products as any)?.map((p: any) => [p.id, p.price]));
+    // Fetch variant prices for items that specify a variant
+    const variantIds = items.filter(i => i.variant_id).map(i => i.variant_id!);
+    let variantPriceMap = new Map<number, number>();
+    if (variantIds.length > 0) {
+        const { data: variants } = await (supabase.from('product_variants') as any)
+            .select('id, price')
+            .in('id', variantIds);
+        variantPriceMap = new Map((variants as any[] ?? []).map((v: any) => [v.id, Number(v.price)]));
+    }
 
-    // 2. Insert Order
-    // Note: 'products' column is legacy but required by DB constraint if not nullable.
-    // We pass [] to satisfy it if needed, or let DB handle defaults.
-    const { data: newOrder, error: orderError } = await (supabase.from('orders') as any) // Cast to any to bypass strict type checking on 'products' if outdated
-        .insert([{
-            ...orderData,
-            products: [] // Legacy field
-        }])
+    // Insert order
+    const { data: newOrder, error: orderError } = await (supabase.from('orders') as any)
+        .insert([{ ...orderData, products: [] }])
         .select()
         .single();
 
     if (orderError) throw new Error(orderError.message);
 
-    // 3. Insert Order Items
+    // Insert order items with correct prices
     const orderItemsData = items.map(item => ({
-        order_id: newOrder.id,
+        order_id:   newOrder.id,
         product_id: item.product_id,
-        quantity: item.quantity,
-        unit_price: priceMap.get(item.product_id) ?? 0
+        variant_id: item.variant_id ?? null,
+        quantity:   item.quantity,
+        unit_price: item.variant_id
+            ? (variantPriceMap.get(item.variant_id) ?? productPriceMap.get(item.product_id) ?? 0)
+            : (productPriceMap.get(item.product_id) ?? 0),
     }));
 
-    const { error: itemsError } = await (supabase.from('order_items') as any)
-        .insert(orderItemsData);
+    const { error: itemsError } = await (supabase.from('order_items') as any).insert(orderItemsData);
 
     if (itemsError) {
-        // Rollback? Supabase doesn't support easy rollback here without RPC.
-        // For now, allow failure but log it. Ideally we delete the order.
         await supabase.from('orders').delete().eq('id', newOrder.id);
         throw new Error(`Failed to create order items: ${itemsError.message}`);
     }
 
-    // 4. Return full order
     const createdOrder = await getOrderById(supabase, newOrder.id);
     if (!createdOrder) throw new Error('Order created but failed to retrieve');
     return createdOrder;
@@ -64,20 +68,14 @@ export async function updateOrder(
     id: number,
     order: Partial<OrderInput>
 ): Promise<Order> {
-    // Separate items from order data
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { items, total_price, ...orderData } = order;
 
-    // Update order details (status, etc)
     const { error } = await (supabase.from('orders') as any)
         .update(orderData)
         .eq('id', id);
 
     if (error) throw new Error(error.message);
-
-    // If items need updating, that's complex (delete all and recreate? or diff?).
-    // For this query, we implement basic order update (status, info).
-    // If items logic is needed, it should be added here.
 
     const updated = await getOrderById(supabase, id);
     if (!updated) throw new Error('Failed to retrieve updated order');

@@ -4,51 +4,37 @@
   import { t } from "$lib/i18n/translations";
   import Button from "$lib/components/ui/Button.svelte";
   import { goto } from "$app/navigation";
-  import type { Json } from "$lib/types/database";
   import { createOrder } from "$lib/api/orders";
   import { brands } from "$lib/i18n/brand";
   import { numberToWilaya } from "$lib/constants/wilaya";
   import { Check, Percent } from "@lucide/svelte";
 
   let customerName = $state("");
-  let phoneNumber = $state("");
-  let address = $state("");
-  let wilaya = $state(16);
-  let couponCode = $state("");
-  let couponError = $state("");
+  let phoneNumber  = $state("");
+  let address      = $state("");
+  let wilaya       = $state(16);
+  let couponCode   = $state("");
+  let couponError  = $state("");
   let couponSuccess = $state(false);
-  let isSubmitting = $state(false);
-  let orderError = $state("");
+  let isSubmitting  = $state(false);
+  let orderError    = $state("");
 
-  // Wilaya options (1-69)
   const wilayaOptions = Array.from({ length: 69 }, (_, i) => i + 1);
 
   async function handleApplyCoupon(): Promise<void> {
-    if (!couponCode.trim()) {
-      couponError = "Please enter a coupon code";
-      return;
-    }
-
+    if (!couponCode.trim()) { couponError = "Please enter a coupon code"; return; }
     try {
       const response = await fetch("/api/validate-coupon", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: couponCode }),
       });
-
       const data = await response.json();
-
-      if (!response.ok) {
-        couponError = data.error || "Invalid coupon";
-        couponSuccess = false;
-        return;
-      }
-
+      if (!response.ok) { couponError = data.error || "Invalid coupon"; couponSuccess = false; return; }
       applyCoupon(couponCode, data.discount);
       couponSuccess = true;
       couponError = "";
-    } catch (err) {
-      console.error("Error applying coupon:", err);
+    } catch {
       couponError = "Failed to apply coupon";
       couponSuccess = false;
     }
@@ -56,42 +42,31 @@
 
   async function handleSubmit(event: Event): Promise<void> {
     event.preventDefault();
-
-    if ($cartTotal.itemCount === 0) {
-      orderError = "Cart is empty";
-      return;
-    }
-
-    if (!customerName || !phoneNumber || !address) {
-      orderError = "Please fill all required fields";
-      return;
-    }
+    if ($cartTotal.itemCount === 0) { orderError = "Cart is empty"; return; }
+    if (!customerName || !phoneNumber || !address) { orderError = "Please fill all required fields"; return; }
 
     isSubmitting = true;
     orderError = "";
 
     try {
-      // Prepare order data
       const orderData = {
         customer_name: customerName,
-        phone_number: phoneNumber,
-        address: address,
-        wilaya: wilaya,
+        phone_number:  phoneNumber,
+        address,
+        wilaya,
         items: $cart.items.map((item) => ({
           product_id: item.productId,
-          quantity: item.quantity,
+          variant_id: item.variantId ?? null,
+          quantity:   item.quantity,
         })),
         total_price: $cartTotal.total,
         status: "pending" as const,
       };
 
       const data = await createOrder(orderData);
-
-      // Clear cart and redirect
       clearCart();
       goto(`/order-success?id=${data.id}`);
     } catch (err) {
-      console.error("Error placing order:", err);
       orderError = err instanceof Error ? err.message : "Failed to place order";
     } finally {
       isSubmitting = false;
@@ -110,9 +85,7 @@
     {#if $cartTotal.itemCount === 0}
       <div class="empty-cart">
         <p>{$t.emptyCart}</p>
-        <Button type="primary" onclick={() => goto("/products")}>
-          {$t.products}
-        </Button>
+        <Button type="primary" onclick={() => goto("/products")}>{$t.products}</Button>
       </div>
     {:else}
       <div class="checkout-content">
@@ -122,52 +95,30 @@
 
           <div class="form-group">
             <label for="name">{$t.customerName} *</label>
-            <input
-              id="name"
-              type="text"
-              placeholder="John Doe..."
-              bind:value={customerName}
-              required
-            />
+            <input id="name" type="text" placeholder="John Doe..." bind:value={customerName} required />
           </div>
 
           <div class="form-group">
             <label for="phone">{$t.phoneNumber} *</label>
-            <input
-              id="phone"
-              type="tel"
-              placeholder="0540123456..."
-              bind:value={phoneNumber}
-              required
-            />
+            <input id="phone" type="tel" placeholder="0540123456..." bind:value={phoneNumber} required />
           </div>
 
           <div class="form-group">
             <label for="address">{$t.address} *</label>
-            <textarea
-              id="address"
-              bind:value={address}
-              placeholder="Alger, Exemple rue 123..."
-              rows="1"
-              required
-            ></textarea>
+            <textarea id="address" bind:value={address} placeholder="Alger, Exemple rue 123..." rows="1" required></textarea>
           </div>
 
           <div class="form-group">
             <label for="wilaya">{$t.wilaya} *</label>
             <select id="wilaya" bind:value={wilaya} required>
               {#each wilayaOptions as option}
-                <option value={option}
-                  >{option} &bull; {numberToWilaya(option)}</option
-                >
+                <option value={option}>{option} &bull; {numberToWilaya(option)}</option>
               {/each}
             </select>
           </div>
 
           {#if orderError}
-            <div class="error-message">
-              <p>{orderError}</p>
-            </div>
+            <div class="error-message"><p>{orderError}</p></div>
           {/if}
 
           <Button type="primary" disabled={isSubmitting} fullWidth Icon={Check}>
@@ -182,7 +133,11 @@
           <div class="summary-items">
             {#each $cart.items as item}
               <div class="summary-item">
-                <span>{item.name} × {item.quantity}</span>
+                <span>
+                  {item.name}
+                  {#if item.size}<span class="item-size-tag">{item.size}ml</span>{/if}
+                  × {item.quantity}
+                </span>
                 <span>{(item.price * item.quantity).toFixed(2)} DA</span>
               </div>
             {/each}
@@ -191,21 +146,11 @@
           <div class="coupon-section">
             <h3>{$t.couponCode}</h3>
             <div class="coupon-input">
-              <input
-                type="text"
-                bind:value={couponCode}
-                placeholder="EXAMPLE30"
-              />
-              <Button type="cta" onclick={handleApplyCoupon} Icon={Percent}>
-                {$t.apply}
-              </Button>
+              <input type="text" bind:value={couponCode} placeholder="EXAMPLE30" />
+              <Button type="cta" onclick={handleApplyCoupon} Icon={Percent}>{$t.apply}</Button>
             </div>
-            {#if couponError}
-              <p class="coupon-error">{couponError}</p>
-            {/if}
-            {#if couponSuccess}
-              <p class="coupon-success">Coupon applied successfully!</p>
-            {/if}
+            {#if couponError}<p class="coupon-error">{couponError}</p>{/if}
+            {#if couponSuccess}<p class="coupon-success">Coupon applied successfully!</p>{/if}
           </div>
 
           <div class="summary-totals">
@@ -213,16 +158,12 @@
               <span>{$t.subtotal}</span>
               <span>{$cartTotal.subtotal.toFixed(2)} DA</span>
             </div>
-
             {#if $cart.discount > 0}
               <div class="summary-row discount">
                 <span>{$t.discount} ({$cart.discount}%)</span>
-                <span
-                  >-{(($cartTotal.subtotal * $cart.discount) / 100).toFixed(2)} DA</span
-                >
+                <span>-{(($cartTotal.subtotal * $cart.discount) / 100).toFixed(2)} DA</span>
               </div>
             {/if}
-
             <div class="summary-row total">
               <span>{$t.total}</span>
               <span>{$cartTotal.total.toFixed(2)} DA</span>
@@ -235,10 +176,7 @@
 </div>
 
 <style>
-  .checkout-page {
-    padding: var(--spacing-xl) 0;
-    min-height: 60vh;
-  }
+  .checkout-page { padding: var(--spacing-xl) 0; min-height: 60vh; }
 
   .page-title {
     text-align: center;
@@ -247,7 +185,6 @@
     letter-spacing: 0.2em;
   }
 
-  /* Empty Cart */
   .empty-cart {
     text-align: center;
     padding: var(--spacing-xl);
@@ -262,14 +199,12 @@
     margin-bottom: var(--spacing-md);
   }
 
-  /* Checkout Content */
   .checkout-content {
     display: grid;
     grid-template-columns: 1fr 400px;
     gap: var(--spacing-lg);
   }
 
-  /* Checkout Form */
   .checkout-form {
     background-color: var(--color-card-bg);
     border: 1px solid var(--color-border);
@@ -277,15 +212,9 @@
     border-radius: var(--radius-sm);
   }
 
-  .checkout-form h2 {
-    margin-bottom: var(--spacing-md);
-    font-family: var(--font-heading);
-    letter-spacing: 0.1em;
-  }
+  .checkout-form h2 { margin-bottom: var(--spacing-md); font-family: var(--font-heading); letter-spacing: 0.1em; }
 
-  .form-group {
-    margin-bottom: var(--spacing-md);
-  }
+  .form-group { margin-bottom: var(--spacing-md); }
 
   .form-group label {
     display: block;
@@ -315,12 +244,8 @@
     margin-bottom: var(--spacing-md);
   }
 
-  .error-message p {
-    color: red;
-    margin: 0;
-  }
+  .error-message p { color: red; margin: 0; }
 
-  /* Order Summary */
   .order-summary {
     background-color: var(--color-card-bg);
     border: 1px solid var(--color-border);
@@ -331,11 +256,7 @@
     top: 100px;
   }
 
-  .order-summary h2 {
-    margin-bottom: var(--spacing-md);
-    font-family: var(--font-heading);
-    letter-spacing: 0.1em;
-  }
+  .order-summary h2 { margin-bottom: var(--spacing-md); font-family: var(--font-heading); letter-spacing: 0.1em; }
 
   .summary-items {
     margin-bottom: var(--spacing-md);
@@ -348,6 +269,18 @@
     justify-content: space-between;
     margin-bottom: var(--spacing-xs);
     font-size: 0.875rem;
+    gap: 0.5rem;
+    align-items: baseline;
+  }
+
+  .item-size-tag {
+    font-size: 0.7rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 3px;
+    padding: 0 0.3rem;
+    color: var(--color-text-secondary);
+    margin: 0 0.2rem;
   }
 
   .coupon-section {
@@ -377,21 +310,10 @@
     color: var(--color-text);
   }
 
-  .coupon-error {
-    color: red;
-    font-size: 0.875rem;
-    margin-top: var(--spacing-xs);
-  }
+  .coupon-error  { color: red; font-size: 0.875rem; margin-top: var(--spacing-xs); }
+  .coupon-success { color: green; font-size: 0.875rem; margin-top: var(--spacing-xs); }
 
-  .coupon-success {
-    color: green;
-    font-size: 0.875rem;
-    margin-top: var(--spacing-xs);
-  }
-
-  .summary-totals {
-    margin-bottom: var(--spacing-md);
-  }
+  .summary-totals { margin-bottom: var(--spacing-md); }
 
   .summary-row {
     display: flex;
@@ -399,9 +321,7 @@
     margin-bottom: var(--spacing-sm);
   }
 
-  .summary-row.discount {
-    color: green;
-  }
+  .summary-row.discount { color: green; }
 
   .summary-row.total {
     font-weight: 600;
@@ -410,14 +330,8 @@
     border-top: 1px solid var(--color-border);
   }
 
-  /* Responsive */
   @media (max-width: 1024px) {
-    .checkout-content {
-      grid-template-columns: 1fr;
-    }
-
-    .order-summary {
-      position: static;
-    }
+    .checkout-content { grid-template-columns: 1fr; }
+    .order-summary { position: static; }
   }
 </style>

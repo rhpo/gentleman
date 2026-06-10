@@ -6,27 +6,44 @@
   import MainPage from "$lib/components/ui/MainPage.svelte";
   import Container from "$lib/components/ui/Container.svelte";
   import type { PageData } from "./$types";
-  import { Plus, ShoppingCart } from "@lucide/svelte";
+  import type { ProductVariant } from "$lib/types/entities";
+  import { ShoppingCart } from "@lucide/svelte";
   import svelteTilt from "vanilla-tilt-svelte";
 
   let { data }: { data: PageData } = $props();
 
   let product = $derived(data.product);
+  let variants = $derived(
+    (product?.variants ?? []).slice().sort((a, b) => a.size - b.size)
+  );
+  let hasVariants = $derived(variants.length > 0);
+
+  let selectedVariant = $state<ProductVariant | null>(null);
   let added = $state(false);
 
+  // Displayed price — variant price if selected, otherwise product base price
+  let displayPrice = $derived(
+    selectedVariant?.price ?? product?.price ?? 0
+  );
+
+  function selectVariant(v: ProductVariant) {
+    selectedVariant = selectedVariant?.id === v.id ? null : v;
+  }
+
   function handleAddToCart(): void {
-    if (product) {
-      addToCart({
-        productId: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.image,
-      });
-      added = true;
-      setTimeout(() => {
-        added = false;
-      }, 2000);
-    }
+    if (!product) return;
+    if (hasVariants && !selectedVariant) return;
+
+    addToCart({
+      productId: product.id,
+      variantId: selectedVariant?.id ?? null,
+      name: product.name,
+      price: displayPrice,
+      image: product.image,
+      size: selectedVariant?.size ?? (product.size || null),
+    });
+    added = true;
+    setTimeout(() => { added = false; }, 2000);
   }
 
   let svelteTiltOptions = {
@@ -72,13 +89,42 @@
           {#if product?.gender}
             <span class="badge gender-badge">{product.gender}</span>
           {/if}
-          {#if product?.size}
-            <span class="badge size-badge">{product.size}</span>
+          {#if !hasVariants && product?.size}
+            <span class="badge size-badge">{product.size}ml</span>
           {/if}
         </div>
 
+        <!-- Size selector (only shown when product has variants) -->
+        {#if hasVariants}
+          <div class="size-selector">
+            <p class="size-selector-label">Select Size</p>
+            <div class="size-pills">
+              {#each variants as variant}
+                <button
+                  type="button"
+                  class="size-pill"
+                  class:selected={selectedVariant?.id === variant.id}
+                  onclick={() => selectVariant(variant)}
+                >
+                  {variant.size}ml
+                  <span class="pill-price">{variant.price.toLocaleString()} DA</span>
+                </button>
+              {/each}
+            </div>
+            {#if !selectedVariant}
+              <p class="size-hint">Choose a size to continue</p>
+            {/if}
+          </div>
+        {/if}
+
         <div class="product-price">
-          <p class="price">{product?.price.toFixed(2)} DA</p>
+          {#if hasVariants && !selectedVariant}
+            <p class="price from-price">
+              from {Math.min(...variants.map(v => v.price)).toLocaleString()} DA
+            </p>
+          {:else}
+            <p class="price">{displayPrice.toLocaleString()} DA</p>
+          {/if}
         </div>
 
         <div class="product-description">
@@ -113,9 +159,15 @@
             onclick={handleAddToCart}
             Icon={ShoppingCart}
             fullWidth
-            disabled={added}
+            disabled={added || (hasVariants && !selectedVariant)}
           >
-            {added ? $t.added : $t.addToCart}
+            {#if added}
+              {$t.added}
+            {:else if hasVariants && !selectedVariant}
+              Select a Size
+            {:else}
+              {$t.addToCart}
+            {/if}
           </Button>
         </div>
       </div>
@@ -209,11 +261,83 @@
     letter-spacing: 0.05em;
   }
 
+  /* Size selector */
+  .size-selector {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .size-selector-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
+
+  .size-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .size-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.6rem 1.2rem;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-card-bg);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 0.875rem;
+    font-weight: 600;
+    min-width: 80px;
+  }
+
+  .size-pill:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  .size-pill.selected {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: var(--color-bg);
+  }
+
+  .pill-price {
+    font-size: 0.7rem;
+    font-weight: 400;
+    opacity: 0.8;
+  }
+
+  .size-pill.selected .pill-price {
+    opacity: 0.85;
+  }
+
+  .size-hint {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+    font-style: italic;
+  }
+
   .price {
     font-size: 2rem;
     font-weight: 700;
     color: var(--color-accent);
     margin: 0;
+  }
+
+  .from-price {
+    font-size: 1.5rem;
+    opacity: 0.8;
   }
 
   .product-description {
@@ -242,13 +366,8 @@
     border-radius: var(--radius-md);
   }
 
-  .product-info-row strong {
-    color: var(--color-text-primary);
-  }
-
-  .product-info-row span {
-    color: var(--color-text-secondary);
-  }
+  .product-info-row strong { color: var(--color-text-primary); }
+  .product-info-row span  { color: var(--color-text-secondary); }
 
   .product-actions {
     margin-top: auto;
@@ -256,22 +375,13 @@
     border-top: 1px solid var(--color-border);
   }
 
-  :global(.add-to-cart-btn) {
-    width: 100%;
-  }
-
   @media (max-width: 768px) {
     .product-detail {
       grid-template-columns: 1fr;
       gap: 2rem;
     }
-
-    .product-name {
-      font-size: 1.5rem;
-    }
-
-    .price {
-      font-size: 1.5rem;
-    }
+    .product-name { font-size: 1.5rem; }
+    .price        { font-size: 1.5rem; }
+    .from-price   { font-size: 1.25rem; }
   }
 </style>

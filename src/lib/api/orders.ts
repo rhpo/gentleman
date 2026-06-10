@@ -23,9 +23,11 @@ export async function getOrders(supabase: SupabaseClient<Database>): Promise<Ord
             items:order_items (
                 order_item_id,
                 product_id,
+                variant_id,
                 quantity,
                 unit_price,
-                product:products (*)
+                product:products (*),
+                variant:product_variants (id, size, price)
             )
         `)
         .order('created_at', { ascending: false });
@@ -46,9 +48,11 @@ export async function getOrderById(supabase: SupabaseClient<Database>, id: numbe
             items:order_items (
                 order_item_id,
                 product_id,
+                variant_id,
                 quantity,
                 unit_price,
-                product:products (*)
+                product:products (*),
+                variant:product_variants (id, size, price)
             )
         `)
         .eq('id', id)
@@ -72,9 +76,7 @@ import { supabase as defaultSupabase } from '$lib/supabase';
 export async function createOrder(input: OrderInput): Promise<Order> {
 	const response = await fetch('/api/orders', {
 		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json'
-		},
+		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(input)
 	});
 
@@ -89,4 +91,3 @@ export async function createOrder(input: OrderInput): Promise<Order> {
 export async function listOrders(): Promise<Order[]> {
     return getOrders(defaultSupabase);
 }
-

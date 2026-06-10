@@ -5,7 +5,7 @@
   import Button from "../ui/Button.svelte";
   import ProductWithActions from "./ProductWithActions.svelte";
   import type { ProductWithBrand } from "$lib/types/entities";
-  import { ShoppingCart } from "@lucide/svelte";
+  import { ArrowRight, ShoppingCart } from "@lucide/svelte";
   import svelteTilt from "vanilla-tilt-svelte";
 
   interface ProductCardProps {
@@ -15,17 +15,19 @@
   let { product }: ProductCardProps = $props();
   let added = $state(false);
 
+  let hasVariants = $derived((product.variants?.length ?? 0) > 0);
+
   function handleAddToCart(): void {
     addToCart({
       productId: product.id,
+      variantId: null,
       name: product.name,
       price: product.price,
       image: product.image,
+      size: product.size || null,
     });
     added = true;
-    setTimeout(() => {
-      added = false;
-    }, 2000);
+    setTimeout(() => { added = false; }, 2000);
   }
 </script>
 
@@ -43,17 +45,31 @@
   }}
 >
   <ProductWithActions {product}>
-    <Button
-      type="cta"
-      fullWidth
-      onclick={handleAddToCart}
-      Icon={ShoppingCart}
-      iconPosition="left"
-      iconSize={18}
-      disabled={added}
-    >
-      {added ? $t.added : ""}
-    </Button>
+    {#if hasVariants}
+      <!-- Must pick a size on the detail page -->
+      <Button
+        type="cta"
+        fullWidth
+        href="/products/{product.id}"
+        Icon={ArrowRight}
+        iconPosition="right"
+        iconSize={16}
+      >
+        Choose Size
+      </Button>
+    {:else}
+      <Button
+        type="cta"
+        fullWidth
+        onclick={handleAddToCart}
+        Icon={ShoppingCart}
+        iconPosition="left"
+        iconSize={18}
+        disabled={added}
+      >
+        {added ? $t.added : ""}
+      </Button>
+    {/if}
   </ProductWithActions>
 </main>
 

@@ -1,9 +1,7 @@
 <!-- Edit Product Page -->
 <script lang="ts">
   import { goto } from "$app/navigation";
-
   import { updateExistingProduct } from "$lib/api/admin/products";
-
   import Input from "$lib/components/ui/Input.svelte";
   import Button from "$lib/components/ui/Button.svelte";
   import Select from "$lib/components/ui/Select.svelte";
@@ -11,20 +9,17 @@
   import AdminPage from "$lib/components/AdminPage.svelte";
   import DragDropZone from "$lib/components/ui/DragDropZone.svelte";
   import BrandSelector from "$lib/components/ui/BrandSelector.svelte";
-
+  import VariantsEditor from "$lib/components/ui/VariantsEditor.svelte";
   import type { PageData } from "./$types";
-
   import type {
     ProductType,
     ProductCategory,
     ProductGender,
     ScentFamily,
     ProductOccasion,
-    ProductSize,
-    Brand,
     ProductInput,
+    ProductVariantInput,
   } from "$lib/types/entities";
-
   import { STORAGE_BUCKETS } from "$lib/constants/storage";
   import {
     TYPE_OPTIONS,
@@ -49,12 +44,15 @@
     gender: "Unisex",
     scent_family: "Floral",
     occasion: "Evening",
-    size: 100, // Standard (100ml)
+    size: 100,
     brand_id: null as number | null,
     price: 0,
     description: "",
     image: "",
   });
+
+  let useVariants = $state(false);
+  let variants = $state<ProductVariantInput[]>([]);
 
   let loading = $state(false);
   let error = $state("");
@@ -64,19 +62,27 @@
   $effect(() => {
     if (product) {
       formData = {
-        name: product.name,
-        type: product.type,
-        category: product.category,
-        gender: product.gender,
+        name:         product.name,
+        type:         product.type,
+        category:     product.category,
+        gender:       product.gender,
         scent_family: product.scent_family,
-        occasion: product.occasion,
-        size: product.size,
-        brand_id: product.brand_id || null,
-        price: product.price || 0,
-        description: product.description,
-        image: "", // Don't auto-fill with old image - only upload if changed
+        occasion:     product.occasion,
+        size:         product.size,
+        brand_id:     product.brand_id || null,
+        price:        product.price || 0,
+        description:  product.description,
+        image:        "",
       };
-      imagePreview = product.image; // Show current image as preview
+      imagePreview = product.image;
+
+      // Restore variant state from loaded product
+      const existingVariants = (product.variants ?? []).map(v => ({
+        size: v.size,
+        price: v.price,
+      }));
+      useVariants = existingVariants.length > 0;
+      variants = existingVariants;
     }
   });
 
@@ -86,22 +92,16 @@
       imagePreview = product?.image || "";
       return;
     }
-
     imageFile = file;
-
     const reader = new FileReader();
-    reader.onload = (e) => {
-      imagePreview = (e.target?.result as string) || "";
-    };
+    reader.onload = (e) => { imagePreview = (e.target?.result as string) || ""; };
     reader.readAsDataURL(file);
   }
 
   async function handleSubmit(e: SubmitEvent): Promise<void> {
     e.preventDefault();
-    if (!productId) {
-      error = "Product ID not found";
-      return;
-    }
+    if (!productId) { error = "Product ID not found"; return; }
+    if (useVariants && variants.length === 0) { error = "Add at least one size variant"; return; }
 
     loading = true;
     error = "";
@@ -109,7 +109,6 @@
     try {
       let imageUrl = formData.image || product?.image || "";
 
-      // If image file changed, upload new one
       if (imageFile) {
         const uploadResponse = await fetch(UPLOAD_ENDPOINT, {
           method: "POST",
@@ -120,20 +119,19 @@
             bucket: STORAGE_BUCKETS.PRODUCT_IMAGES,
           }),
         });
-
         if (!uploadResponse.ok) {
           const uploadError = await uploadResponse.json();
           throw new Error(uploadError.error || "Failed to upload image");
         }
-
         const { url } = await uploadResponse.json();
         imageUrl = url;
       }
 
-      // Update product with potentially new image URL
       const productData: Partial<ProductInput> = {
         ...formData,
         image: imageUrl,
+        // Always send variants key so server knows intent (empty = clear variants)
+        variants: useVariants ? variants : [],
       };
 
       await updateExistingProduct(productId, productData);
@@ -152,15 +150,12 @@
 <AdminPage title="Edit Product" description="Update product information">
   <div class="form-container">
     {#if error}
-      <div class="error-message">
-        <p>{error}</p>
-      </div>
+      <div class="error-message"><p>{error}</p></div>
     {/if}
 
     <form onsubmit={handleSubmit} class="product-form">
       <div class="form-section">
         <h2>Image</h2>
-
         <div class="drag-drop">
           <DragDropZone
             onchange={handleImageChange}
@@ -178,8 +173,7 @@
           label="Product Name *"
           placeholder="Enter product name"
           value={formData.name}
-          onchange={(e) =>
-            (formData.name = (e.target as HTMLInputElement).value)}
+          onchange={(e) => (formData.name = (e.target as HTMLInputElement).value)}
           required
         />
 
@@ -190,46 +184,75 @@
             value={formData.type || "parfum"}
             options={TYPE_OPTIONS as any}
             onchange={(e) =>
-              (formData.type = (e.target as HTMLSelectElement)
-                .value as ProductType)}
+              (formData.type = (e.target as HTMLSelectElement).value as ProductType)}
             required
           />
-
           <Select
             id="category"
             label="Category"
             value={formData.category || "Eau de Parfum"}
             options={CATEGORY_OPTIONS as any}
             onchange={(e) =>
-              (formData.category = (e.target as HTMLSelectElement)
-                .value as ProductCategory)}
+              (formData.category = (e.target as HTMLSelectElement).value as ProductCategory)}
           />
         </div>
 
-        <div class="form-row">
-          <Select
-            id="gender"
-            label="Gender"
-            value={formData.gender || "Unisex"}
-            options={GENDER_OPTIONS as any}
-            onchange={(e) =>
-              (formData.gender = (e.target as HTMLSelectElement)
-                .value as ProductGender)}
-          />
+        <Select
+          id="gender"
+          label="Gender"
+          value={formData.gender || "Unisex"}
+          options={GENDER_OPTIONS as any}
+          onchange={(e) =>
+            (formData.gender = (e.target as HTMLSelectElement).value as ProductGender)}
+        />
+      </div>
 
-          <Input
-            id="size"
-            label="Size (ml)"
-            type="number"
-            placeholder="100"
-            min="1"
-            value={formData.size || 100}
-            onchange={(e) =>
-              (formData.size = Number(
-                (e.target as HTMLInputElement).value,
-              ) as ProductSize)}
+      <div class="form-section">
+        <h2>Sizing &amp; Price</h2>
+
+        <label class="toggle-label">
+          <input
+            type="checkbox"
+            bind:checked={useVariants}
+            onchange={() => { if (!useVariants) variants = []; }}
           />
-        </div>
+          <span>Multiple sizes (variants)</span>
+        </label>
+        <p class="toggle-hint">
+          {useVariants
+            ? "Each size has its own price. The product card will show the lowest price."
+            : "Single size and price."}
+        </p>
+
+        {#if useVariants}
+          <div class="field-group">
+            <label class="field-label">Size Variants *</label>
+            <VariantsEditor {variants} onchange={(v) => (variants = v)} />
+          </div>
+        {:else}
+          <div class="form-row">
+            <Input
+              id="size"
+              label="Size (ml)"
+              type="number"
+              placeholder="100"
+              min="1"
+              value={formData.size || 100}
+              onchange={(e) =>
+                (formData.size = Number((e.target as HTMLInputElement).value))}
+            />
+            <Input
+              id="price"
+              label="Price (DA) *"
+              type="number"
+              step="0.01"
+              value={formData.price}
+              onchange={(e) =>
+                (formData.price = parseFloat((e.target as HTMLInputElement).value))}
+              required
+            />
+          </div>
+        {/if}
       </div>
 
       <div class="form-section">
@@ -242,26 +265,19 @@
             value={formData.scent_family || "Floral"}
             options={SCENT_FAMILY_OPTIONS as any}
             onchange={(e) =>
-              (formData.scent_family = (e.target as HTMLSelectElement)
-                .value as ScentFamily)}
+              (formData.scent_family = (e.target as HTMLSelectElement).value as ScentFamily)}
           />
-
           <Select
             id="occasion"
             label="Occasion"
             value={formData.occasion || "Evening"}
             options={OCCASION_OPTIONS as any}
             onchange={(e) =>
-              (formData.occasion = (e.target as HTMLSelectElement)
-                .value as ProductOccasion)}
+              (formData.occasion = (e.target as HTMLSelectElement).value as ProductOccasion)}
           />
         </div>
 
-        <BrandSelector
-          {brands}
-          bind:value={formData.brand_id}
-          bindToId={true}
-        />
+        <BrandSelector {brands} bind:value={formData.brand_id} bindToId={true} />
 
         <Textarea
           id="description"
@@ -271,21 +287,6 @@
           rows={4}
           onchange={(e) =>
             (formData.description = (e.target as HTMLTextAreaElement).value)}
-        />
-      </div>
-
-      <div class="form-section">
-        <h2>Pricing</h2>
-
-        <Input
-          id="price"
-          label="Price (DA) *"
-          type="number"
-          step="0.01"
-          value={formData.price}
-          onchange={(e) =>
-            (formData.price = parseFloat((e.target as HTMLInputElement).value))}
-          required
         />
       </div>
 
@@ -330,7 +331,6 @@
     background-color: var(--color-card-bg);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-
     display: flex;
     flex-direction: column;
     gap: var(--spacing-sm);
@@ -349,6 +349,46 @@
     gap: var(--spacing-sm);
   }
 
+  .toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-secondary);
+  }
+
+  .toggle-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--color-accent);
+  }
+
+  .toggle-hint {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+    padding-left: 1.5rem;
+  }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .field-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-secondary);
+  }
+
   .form-actions {
     display: flex;
     gap: var(--spacing-md);
@@ -360,7 +400,6 @@
     .form-row {
       grid-template-columns: 1fr;
     }
-
     .form-actions {
       flex-direction: column-reverse;
     }

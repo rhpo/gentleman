@@ -29,6 +29,20 @@ export interface Product {
     created_at: string;
 }
 
+// A single size+price option for a product
+export interface ProductVariant {
+    id: number;
+    product_id: number;
+    size: number;
+    price: number;
+    created_at: string;
+}
+
+export interface ProductVariantInput {
+    size: number;
+    price: number;
+}
+
 export interface ProductInput {
     name: string;
     type: ProductType;
@@ -41,11 +55,14 @@ export interface ProductInput {
     image: string;
     price: number;
     description: string;
+    // When set, overrides the single size/price fields
+    variants?: ProductVariantInput[];
 }
 
 export interface ProductWithBrand extends Product {
     brand?: Brand | string | null;
     brands?: any | null;
+    variants?: ProductVariant[];
 }
 
 // Brand types
@@ -71,9 +88,11 @@ export interface OrderItem {
     order_item_id?: number;
     order_id?: number;
     product_id: number;
+    variant_id?: number | null;
     quantity: number;
     unit_price: number;
     product?: ProductWithBrand;
+    variant?: ProductVariant | null;
 }
 
 export interface Order {
@@ -97,6 +116,7 @@ export interface OrderInput {
     wilaya: number;
     items: {
         product_id: number;
+        variant_id?: number | null;
         quantity: number;
     }[];
     total_price: number;

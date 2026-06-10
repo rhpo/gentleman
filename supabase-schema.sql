@@ -52,6 +52,16 @@ CREATE TABLE IF NOT EXISTS coupons (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Product variants (size + price options per product)
+CREATE TABLE IF NOT EXISTS product_variants (
+    id          BIGSERIAL PRIMARY KEY,
+    product_id  BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    size        INTEGER NOT NULL,
+    price       NUMERIC(10, 2) NOT NULL,
+    created_at  TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(product_id, size)
+);
+
 -- Create indexes for performance
 CREATE INDEX IF NOT EXISTS idx_products_type ON products(type);
 CREATE INDEX IF NOT EXISTS idx_products_gender ON products(gender);

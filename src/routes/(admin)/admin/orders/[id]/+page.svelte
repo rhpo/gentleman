@@ -271,16 +271,19 @@
                 </div>
                 <div class="col-name">
                   <div class="name">{product.name}</div>
+                  {#if item.variant?.size}
+                    <div class="variant-tag">{item.variant.size}ml</div>
+                  {/if}
                   {#if product.brand && typeof product.brand !== "string"}
                     <div class="brand">{product.brand.name}</div>
                   {/if}
                 </div>
                 <div class="col-qty">{item.quantity}</div>
                 <div class="col-price">
-                  {product.price.toLocaleString()} DA
+                  {(item.unit_price ?? product.price).toLocaleString()} DA
                 </div>
                 <div class="col-total">
-                  {(product.price * item.quantity).toLocaleString()} DA
+                  {((item.unit_price ?? product.price) * item.quantity).toLocaleString()} DA
                 </div>
               {:else}
                 <div class="col-image">
@@ -611,6 +614,18 @@
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--color-text);
+  }
+
+  .col-name .variant-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    padding: 0.05rem 0.35rem;
+    color: var(--color-accent);
+    font-weight: 600;
+    margin-top: 1px;
   }
 
   .col-name .brand {

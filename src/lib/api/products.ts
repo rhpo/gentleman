@@ -17,7 +17,8 @@ export interface ProductFilters {
 function transformProduct(p: any): ProductWithBrand {
 	return {
 		...p,
-		brand: p.brands?.name
+		brand: p.brands?.name,
+		variants: (p.product_variants ?? []).sort((a: any, b: any) => a.size - b.size),
 	} as ProductWithBrand;
 }
 
@@ -30,7 +31,7 @@ export async function getProducts(
 ): Promise<ProductWithBrand[]> {
 	let query = supabase
 		.from('products')
-		.select('*, brands!inner(name, logo)');
+		.select('*, brands!inner(name, logo), product_variants(id, size, price)');
 
 	if (filters.query) {
 		const q = `%${filters.query}%`;
@@ -75,7 +76,7 @@ export async function getProducts(
 }
 
 /**
- * Get a single product by ID
+ * Get a single product by ID (includes variants)
  */
 export async function getProductById(
     supabase: SupabaseClient<Database>,
@@ -83,7 +84,7 @@ export async function getProductById(
 ): Promise<ProductWithBrand | null> {
 	const { data, error } = await supabase
 		.from('products')
-		.select('*, brands(name, logo)')
+		.select('*, brands(name, logo), product_variants(id, size, price)')
 		.eq('id', id)
 		.single();
 
@@ -106,7 +107,7 @@ export async function getProductsByIds(
 
 	const { data, error } = await supabase
 		.from('products')
-		.select('*, brands(name, logo)')
+		.select('*, brands(name, logo), product_variants(id, size, price)')
 		.in('id', ids);
 
 	if (error) {
@@ -132,4 +133,3 @@ export async function getProductByIdClient(id: number): Promise<ProductWithBrand
 export async function getProductsByIdsClient(ids: number[]): Promise<ProductWithBrand[]> {
 	return getProductsByIds(defaultSupabase, ids);
 }
-

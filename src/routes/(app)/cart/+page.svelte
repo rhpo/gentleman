@@ -9,7 +9,6 @@
   } from "$lib/stores/cart";
 
   import Button from "$lib/components/ui/Button.svelte";
-
   import { t } from "$lib/i18n/translations";
   import { goto } from "$app/navigation";
   import { brands } from "$lib/i18n/brand";
@@ -17,17 +16,13 @@
   import MainPage from "$lib/components/ui/MainPage.svelte";
 
   function handleCheckout(): void {
-    if ($cartTotal.itemCount > 0) {
-      goto("/checkout");
-    }
+    if ($cartTotal.itemCount > 0) goto("/checkout");
   }
 </script>
 
 <MainPage
   title={$t.cart}
-  description={`${
-    $cartTotal.itemCount === 0 ? $t.emptyCart : $t.cartDescription
-  }`}
+  description={`${$cartTotal.itemCount === 0 ? $t.emptyCart : $t.cartDescription}`}
 >
   <div class="cart-page">
     <div class="container">
@@ -38,8 +33,7 @@
           <CircleQuestionMark size={100} />
           <p style="margin-top: var(--spacing-sm);">{$t.emptyCart}</p>
           <Button type="primary" onclick={() => goto("/products")} Icon={Eye}>
-            {$t.discover}
-            {$t.products}
+            {$t.discover} {$t.products}
           </Button>
         </div>
       {:else}
@@ -50,39 +44,32 @@
               <div class="cart-item">
                 <img src={item.image} alt={item.name} class="item-image" />
                 <div class="item-info">
-                  <h3>{item.name}</h3>
-                  <p class="item-price">
-                    {item.price.toFixed(2)} DA
-                  </p>
+                  <h3>
+                    {item.name}
+                    {#if item.size}
+                      <span class="item-size">{item.size}ml</span>
+                    {/if}
+                  </h3>
+                  <p class="item-price">{item.price.toFixed(2)} DA</p>
                 </div>
                 <div class="item-quantity">
                   <button
-                    onclick={() =>
-                      updateQuantity(item.productId, item.quantity - 1)}
+                    onclick={() => updateQuantity(item.productId, item.quantity - 1, item.variantId)}
                     class="quantity-btn"
-                  >
-                    -
-                  </button>
+                  >-</button>
                   <span>{item.quantity}</span>
                   <button
-                    onclick={() =>
-                      updateQuantity(item.productId, item.quantity + 1)}
+                    onclick={() => updateQuantity(item.productId, item.quantity + 1, item.variantId)}
                     class="quantity-btn"
-                  >
-                    +
-                  </button>
+                  >+</button>
                 </div>
                 <div class="item-total">
-                  <p>
-                    {(item.price * item.quantity).toFixed(2)} DA
-                  </p>
+                  <p>{(item.price * item.quantity).toFixed(2)} DA</p>
                 </div>
                 <button
-                  onclick={() => removeFromCart(item.productId)}
+                  onclick={() => removeFromCart(item.productId, item.variantId)}
                   class="remove-btn"
-                >
-                  ×
-                </button>
+                >×</button>
               </div>
             {/each}
           </div>
@@ -99,9 +86,7 @@
             {#if $cart.discount > 0}
               <div class="summary-row discount">
                 <span>Discount ({$cart.discount}%)</span>
-                <span
-                  >-{(($cartTotal.subtotal * $cart.discount) / 100).toFixed(2)} DA</span
-                >
+                <span>-{(($cartTotal.subtotal * $cart.discount) / 100).toFixed(2)} DA</span>
               </div>
             {/if}
 
@@ -110,12 +95,7 @@
               <span>{$cartTotal.total.toFixed(2)} DA</span>
             </div>
 
-            <Button
-              type="primary"
-              onclick={handleCheckout}
-              fullWidth
-              Icon={ArrowRight}
-            >
+            <Button type="primary" onclick={handleCheckout} fullWidth Icon={ArrowRight}>
               {$t.checkout}
             </Button>
 
@@ -142,7 +122,6 @@
     letter-spacing: 0.2em;
   }
 
-  /* Empty Cart */
   .empty-cart {
     text-align: center;
     padding: var(--spacing-xl);
@@ -157,14 +136,12 @@
     margin-bottom: var(--spacing-md);
   }
 
-  /* Cart Content */
   .cart-content {
     display: grid;
     grid-template-columns: 1fr 400px;
     gap: var(--spacing-lg);
   }
 
-  /* Cart Items */
   .cart-items {
     display: flex;
     flex-direction: column;
@@ -192,6 +169,20 @@
   .item-info h3 {
     font-size: 1.125rem;
     margin-bottom: var(--spacing-xs);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .item-size {
+    font-size: 0.75rem;
+    background: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    padding: 0.1rem 0.4rem;
+    color: var(--color-text-secondary);
+    font-weight: 400;
   }
 
   .item-price {
@@ -239,11 +230,8 @@
     transition: color var(--transition-fast);
   }
 
-  .remove-btn:hover {
-    color: var(--color-text);
-  }
+  .remove-btn:hover { color: var(--color-text); }
 
-  /* Cart Summary */
   .cart-summary {
     background-color: var(--color-card-bg);
     border: 1px solid var(--color-border);
@@ -268,9 +256,7 @@
     border-bottom: 1px solid var(--color-border);
   }
 
-  .summary-row.discount {
-    color: green;
-  }
+  .summary-row.discount { color: green; }
 
   .summary-row.total {
     font-weight: 600;
@@ -279,34 +265,9 @@
     margin-bottom: var(--spacing-md);
   }
 
-  .clear-cart-btn {
-    width: 100%;
-    padding: var(--spacing-sm);
-    margin-top: var(--spacing-sm);
-    background: none;
-    border: 1px solid var(--color-border);
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    font-size: 0.875rem;
-    transition: all var(--transition-fast);
-  }
-
-  .clear-cart-btn:hover {
-    border-color: var(--color-text);
-    color: var(--color-text);
-  }
-
-  /* Responsive */
   @media (max-width: 1024px) {
-    .cart-content {
-      grid-template-columns: 1fr;
-    }
-
-    .cart-summary {
-      position: static;
-    }
+    .cart-content { grid-template-columns: 1fr; }
+    .cart-summary { position: static; }
   }
 
   @media (max-width: 768px) {
@@ -314,20 +275,8 @@
       grid-template-columns: 80px 1fr;
       gap: var(--spacing-sm);
     }
-
-    .item-image {
-      width: 80px;
-      height: 107px;
-    }
-
-    .item-quantity,
-    .item-total {
-      grid-column: 2;
-    }
-
-    .remove-btn {
-      grid-column: 2;
-      justify-self: end;
-    }
+    .item-image { width: 80px; height: 107px; }
+    .item-quantity, .item-total { grid-column: 2; }
+    .remove-btn { grid-column: 2; justify-self: end; }
   }
 </style>
