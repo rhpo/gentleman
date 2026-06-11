@@ -13,19 +13,19 @@ export type TPromotion = string[];
 export const promotions: Record<Language, TPromotion> = {
     en: [
         "DISCOVER OUR LATEST COLLECTION",
-        "QUALITY WALLPAPERS FOR EVERY INTERIOR",
+        "STORE AT BAB EZZOUAR, ALGIERS!",
         "EXPLORE OUR CATALOG",
     ],
 
     fr: [
         "DÉCOUVREZ NOTRE NOUVELLE COLLECTION",
-        "PAPIERS PEINTS DE QUALITÉ POUR TOUS LES INTÉRIEURS",
+        "TROUVEZ NOTRE MAGASIN À BAB EZZOUAR, ALGER!",
         "EXPLOREZ NOTRE CATALOGUE",
     ],
 
     ar: [
         "اكتشف مجموعتنا الجديدة",
-        "ورق جدران عالي الجودة لجميع المساحات",
+        "تجدون متجرنا في باب الزوار، الجزائر!",
         "تصفح كتالوجنا",
     ],
 };
