@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin/
 Disallow: /api/
 
-Sitemap: https://gentleman.dz/sitemap.xml
+Sitemap: https://gentlemandz.com/sitemap.xml

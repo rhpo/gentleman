@@ -5,7 +5,7 @@ import { getProducts } from '$lib/api/server/products';
 
 export const GET: RequestHandler = async ({ locals }) => {
     // Determine the base URL
-    const siteUrl = env.PUBLIC_SITE_URL || 'https://www.gentleman.dz';
+    const siteUrl = env.PUBLIC_SITE_URL || 'https://www.gentlemandz.com';
 
     const pages = [
         '',
