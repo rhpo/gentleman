@@ -11,26 +11,24 @@ export type TPromotion = string[];
 // "OFFRE SPÉCIALE: -20% SUR TOUS LES PARFUMS",
 
 export const promotions: Record<Language, TPromotion> = {
-
     en: [
-        "FREE DELIVERY FROM 5000DA",
-        "NEW COLLECTION AVAILABLE",
-        "SPECIAL OFFER: -20% ON ALL <a href=\"/products\">PARFUMS</a>",
+        "DISCOVER OUR LATEST COLLECTION",
+        "QUALITY WALLPAPERS FOR EVERY INTERIOR",
+        "EXPLORE OUR CATALOG",
     ],
 
     fr: [
-        "LIVRAISON GRATUITE À PARTIR DE 5000DA",
-        "NOUVELLE COLLECTION DISPONIBLE",
-        "OFFRE SPÉCIALE: -20% SUR TOUS LES <a href=\"/products\">PARFUMS</a>",
+        "DÉCOUVREZ NOTRE NOUVELLE COLLECTION",
+        "PAPIERS PEINTS DE QUALITÉ POUR TOUS LES INTÉRIEURS",
+        "EXPLOREZ NOTRE CATALOGUE",
     ],
 
     ar: [
-        "توصيل مجاني للطلبات التي تزيد قيمتها عن 5000 دينار جزائري",
-        "إضافة جديدة متاحة",
-        "العرض الخاص: -20% على جميع <a href=\"/products\">العطور</a>",
+        "اكتشف مجموعتنا الجديدة",
+        "ورق جدران عالي الجودة لجميع المساحات",
+        "تصفح كتالوجنا",
     ],
-
-}
+};
 
 export const promos: Readable<TPromotion> = derived<typeof language, TPromotion>(
     language,
