@@ -141,7 +141,7 @@
         </div>
       {:else}
         <div class="products-grid">
-          {#each [...data.products, ...data.products] as product}
+          {#each data.products as product}
             <ProductCard {product} />
           {/each}
         </div>
