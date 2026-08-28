@@ -12,7 +12,7 @@ export interface AdminLoginResult {
 }
 
 /**
- * Perform login using the provided supabase client
+ * Logs in a user using the provided supabase client.
  */
 export async function serverLogin(
 	supabase: SupabaseClient<Database>,
@@ -34,7 +34,7 @@ export async function serverLogin(
 }
 
 /**
- * Check auth session using the provided supabase client
+ * Checks if an auth session exists using the provided supabase client.
  */
 export async function serverCheckAuth(supabase: SupabaseClient<Database>): Promise<boolean> {
 	const { data: { session } } = await supabase.auth.getSession();
