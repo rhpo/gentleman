@@ -15,6 +15,10 @@
   let error = $derived(data.error || "");
   let searchQuery = $state("");
 
+  const BATCH_SIZE = 16;
+  let visibleCount = $state(BATCH_SIZE);
+  let sentinelEl = $state<HTMLElement | null>(null);
+
   const filteredProducts = $derived.by(() => {
     if (!searchQuery.trim()) return products;
     const query = searchQuery.toLowerCase();
@@ -23,6 +27,34 @@
         p.name.toLowerCase().includes(query) ||
         p.type.toLowerCase().includes(query),
     );
+  });
+
+  let visibleProducts = $derived(filteredProducts.slice(0, visibleCount));
+  let hasMore = $derived(visibleCount < filteredProducts.length);
+
+  $effect(() => {
+    filteredProducts;
+    visibleCount = BATCH_SIZE;
+  });
+
+  function loadMore(): void {
+    if (hasMore) {
+      visibleCount += BATCH_SIZE;
+    }
+  }
+
+  $effect(() => {
+    if (!sentinelEl) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          visibleCount += BATCH_SIZE;
+        }
+      },
+      { rootMargin: "300px 0px" }
+    );
+    observer.observe(sentinelEl);
+    return () => observer.disconnect();
   });
 
   async function loadProducts(): Promise<void> {
@@ -90,7 +122,7 @@
       </div>
     {:else}
       <div class="products-grid">
-        {#each filteredProducts as product (product.id)}
+        {#each visibleProducts as product (product.id)}
           <ProductWithActions {product}>
             <div class="admin-actions">
               <Button type="secondary" onclick={() => handleEdit(product.id)}>
@@ -103,6 +135,15 @@
           </ProductWithActions>
         {/each}
       </div>
+
+      {#if hasMore}
+        <div class="lazy-load-container" bind:this={sentinelEl}>
+          <div class="spinner"></div>
+          <button class="load-more-btn" onclick={loadMore}>
+            Load More ({filteredProducts.length - visibleCount} remaining)
+          </button>
+        </div>
+      {/if}
     {/if}
   </main>
 </AdminPage>
@@ -170,6 +211,52 @@
     flex: 1;
     font-size: 0.875rem;
     padding: var(--spacing-sm);
+  }
+
+  .lazy-load-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xl) 0;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+  }
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--color-border);
+    border-top-color: var(--color-accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .load-more-btn {
+    background-color: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    padding: 0.75rem 1.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .load-more-btn:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
   }
 
   @media (max-width: 768px) {

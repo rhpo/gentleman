@@ -30,6 +30,42 @@
 
   let { data }: { data: PageData } = $props();
 
+  const BATCH_SIZE = 16;
+  let visibleCount = $state(BATCH_SIZE);
+  let sentinelEl = $state<HTMLElement | null>(null);
+
+  let visibleProducts = $derived(data.products.slice(0, visibleCount));
+  let hasMore = $derived(visibleCount < data.products.length);
+
+  // Reset batch count when filter/products change
+  $effect(() => {
+    data.products;
+    visibleCount = BATCH_SIZE;
+  });
+
+  function loadMore(): void {
+    if (hasMore) {
+      visibleCount += BATCH_SIZE;
+    }
+  }
+
+  // Auto load next 16 products as user scrolls near bottom
+  $effect(() => {
+    if (!sentinelEl) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          visibleCount += BATCH_SIZE;
+        }
+      },
+      { rootMargin: "300px 0px" }
+    );
+
+    observer.observe(sentinelEl);
+    return () => observer.disconnect();
+  });
+
   function updateFilter(key: string, value: string): void {
     const params = new URLSearchParams($page.url.searchParams);
 
@@ -141,10 +177,19 @@
         </div>
       {:else}
         <div class="products-grid">
-          {#each data.products as product}
+          {#each visibleProducts as product (product.id)}
             <ProductCard {product} />
           {/each}
         </div>
+
+        {#if hasMore}
+          <div class="lazy-load-container" bind:this={sentinelEl}>
+            <div class="spinner"></div>
+            <button class="load-more-btn" onclick={loadMore}>
+              Load More ({data.products.length - visibleCount} remaining)
+            </button>
+          </div>
+        {/if}
       {/if}
     </div>
   </div>
@@ -229,6 +274,53 @@
   .empty-state p {
     font-size: 1.125rem;
     color: var(--color-text-secondary);
+  }
+
+  /* Lazy Load Controls */
+  .lazy-load-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xl) 0;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+  }
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--color-border);
+    border-top-color: var(--color-accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .load-more-btn {
+    background-color: var(--color-card-bg);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    padding: 0.75rem 1.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .load-more-btn:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
   }
 
   /* Responsive */

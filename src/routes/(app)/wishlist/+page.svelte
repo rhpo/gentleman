@@ -15,6 +15,32 @@
     let products: ProductWithBrand[] = $state([]);
     let loading = $state(true);
 
+    const BATCH_SIZE = 16;
+    let visibleCount = $state(BATCH_SIZE);
+    let sentinelEl = $state<HTMLElement | null>(null);
+
+    let visibleProducts = $derived(products.slice(0, visibleCount));
+    let hasMore = $derived(visibleCount < products.length);
+
+    $effect(() => {
+        products;
+        visibleCount = BATCH_SIZE;
+    });
+
+    $effect(() => {
+        if (!sentinelEl) return;
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && hasMore) {
+                    visibleCount += BATCH_SIZE;
+                }
+            },
+            { rootMargin: "300px 0px" }
+        );
+        observer.observe(sentinelEl);
+        return () => observer.disconnect();
+    });
+
     async function loadProducts(ids: number[]) {
         if (ids.length === 0) {
             products = [];
@@ -64,10 +90,16 @@
                 </div>
             {:else}
                 <div class="products-grid">
-                    {#each products as product (product.id)}
+                    {#each visibleProducts as product (product.id)}
                         <ProductCard {product} />
                     {/each}
                 </div>
+
+                {#if hasMore}
+                    <div class="lazy-load-container" bind:this={sentinelEl}>
+                        <div class="spinner"></div>
+                    </div>
+                {/if}
             {/if}
         </div>
     </div>
@@ -107,7 +139,8 @@
         gap: var(--spacing-md);
     }
 
-    .loading-state {
+    .loading-state,
+    .lazy-load-container {
         display: flex;
         justify-content: center;
         padding: var(--spacing-xl);
