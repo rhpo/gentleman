@@ -14,10 +14,21 @@ export interface ProductFilters {
 	brand?: string;
 }
 
+import { toCdnStorageUrl } from '$lib/utils/storage-url';
+import { STORAGE_BUCKETS } from '$lib/constants/storage';
+
 function transformProduct(p: any): ProductWithBrand {
+	if (!p) return p;
 	return {
 		...p,
+		image: toCdnStorageUrl(p.image, STORAGE_BUCKETS.PRODUCT_IMAGES),
 		brand: p.brands?.name,
+		brands: p.brands
+			? {
+					...p.brands,
+					logo: toCdnStorageUrl(p.brands.logo, STORAGE_BUCKETS.BRAND_LOGOS)
+				}
+			: undefined,
 		variants: (p.product_variants ?? []).sort((a: any, b: any) => a.size - b.size),
 	} as ProductWithBrand;
 }

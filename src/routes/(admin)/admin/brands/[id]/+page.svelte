@@ -1,6 +1,7 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
   import { STORAGE_BUCKETS } from "$lib/constants/storage";
+  import { extractPathFromUrl } from "$lib/utils/storage-url";
 
   import type { PageData } from "./$types";
   import type { BrandInput } from "$lib/types/entities";
@@ -97,7 +98,7 @@
         if (data.brand.logo) {
           try {
             // Extract the path from the old URL and delete it
-            const oldPath = data.brand.logo.split("/").pop();
+            const oldPath = extractPathFromUrl(data.brand.logo);
             if (oldPath) {
               await fetch(UPLOAD_ENDPOINT, {
                 method: "DELETE",
@@ -152,7 +153,7 @@
       // Delete logo from storage if it exists
       if (data.brand.logo) {
         try {
-          const logoPath = data.brand.logo.split("/").pop();
+          const logoPath = extractPathFromUrl(data.brand.logo);
           if (logoPath) {
             await fetch(UPLOAD_ENDPOINT, {
               method: "DELETE",

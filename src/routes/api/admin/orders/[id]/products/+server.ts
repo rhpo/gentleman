@@ -3,6 +3,8 @@ import type { RequestHandler } from './$types';
 import { createServerClient } from '@supabase/ssr';
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
 import type { Database } from '$lib/types/database';
+import { toCdnStorageUrl } from '$lib/utils/storage-url';
+import { STORAGE_BUCKETS } from '$lib/constants/storage';
 
 export const GET: RequestHandler = async ({ params, cookies }) => {
     try {
@@ -91,7 +93,11 @@ export const GET: RequestHandler = async ({ params, cookies }) => {
         const products = (productDetails as any[]) || [];
         const transformedProducts = products.map(p => ({
             ...p,
-            brand: (p as any).brands,
+            image: toCdnStorageUrl(p.image, STORAGE_BUCKETS.PRODUCT_IMAGES),
+            brand: (p as any).brands ? {
+                ...(p as any).brands,
+                logo: toCdnStorageUrl((p as any).brands.logo, STORAGE_BUCKETS.BRAND_LOGOS)
+            } : (p as any).brands,
             price: Number(p.price)
         }));
 

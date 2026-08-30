@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { STORAGE_BUCKETS } from '$lib/constants/storage';
+import { toCdnStorageUrl } from '$lib/utils/storage-url';
 import type { Database } from '$lib/types/database';
 
 /**
@@ -59,7 +60,8 @@ export async function migrateProductImagesToStorage(
                     .from(STORAGE_BUCKETS.PRODUCT_IMAGES)
                     .getPublicUrl(data.path);
 
-                await (supabase as any).from('products').update({ image: publicData.publicUrl, image_path: path }).eq('id', p.id);
+                const cdnUrl = toCdnStorageUrl(publicData.publicUrl, STORAGE_BUCKETS.PRODUCT_IMAGES);
+                await (supabase as any).from('products').update({ image: cdnUrl, image_path: path }).eq('id', p.id);
 
                 productCount++;
                 console.log(`✓ Migrated product ${p.id}`);
@@ -114,7 +116,8 @@ export async function migrateProductImagesToStorage(
                     .from(STORAGE_BUCKETS.BRAND_LOGOS)
                     .getPublicUrl(data.path);
 
-                await (supabase as any).from('brands').update({ logo: publicData.publicUrl, logo_path: path }).eq('id', b.id);
+                const cdnUrl = toCdnStorageUrl(publicData.publicUrl, STORAGE_BUCKETS.BRAND_LOGOS);
+                await (supabase as any).from('brands').update({ logo: cdnUrl, logo_path: path }).eq('id', b.id);
 
                 brandCount++;
                 console.log(`✓ Migrated brand ${b.id}`);

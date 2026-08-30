@@ -1,5 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { toCdnStorageUrl } from '$lib/utils/storage-url';
+import { STORAGE_BUCKETS } from '$lib/constants/storage';
 
 interface OrderProduct {
     product_id: number;
@@ -42,7 +44,16 @@ export const GET: RequestHandler = async ({ params, locals }) => {
             return json({ error: 'Failed to fetch products' }, { status: 500 });
         }
 
-        return json(productDetails || []);
+        const transformedDetails = (productDetails || []).map((p: any) => ({
+            ...p,
+            image: toCdnStorageUrl(p.image, STORAGE_BUCKETS.PRODUCT_IMAGES),
+            brands: p.brands ? {
+                ...p.brands,
+                logo: toCdnStorageUrl(p.brands.logo, STORAGE_BUCKETS.BRAND_LOGOS)
+            } : p.brands
+        }));
+
+        return json(transformedDetails);
     } catch (err) {
         console.error('Error fetching order products:', err);
         return json({ error: 'Internal server error' }, { status: 500 });

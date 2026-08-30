@@ -26,21 +26,15 @@ export function generateBrandLogoPath(
   return `brands/${brandId}_${timestamp}_${random}.${extension}`;
 }
 
+import { extractPathFromUrl as extractPathFromUrlHelper, toCdnStorageUrl } from "$lib/utils/storage-url";
+
+export { toCdnStorageUrl };
+
 /**
- * Extract the file path from a public URL
- * Converts: https://bucket-url/storage/v1/object/public/bucket/path/to/file.jpg
- * To: path/to/file.jpg
+ * Extract the file path from a public URL or CDN URL
  */
 export function extractPathFromUrl(url: string): string {
-  if (!url) return "";
-
-  try {
-    // Extract the path after '/object/public/{bucket}/'
-    const match = url.match(/\/object\/public\/[^/]+\/(.+)/);
-    return match ? match[1] : "";
-  } catch {
-    return "";
-  }
+  return extractPathFromUrlHelper(url);
 }
 
 /**

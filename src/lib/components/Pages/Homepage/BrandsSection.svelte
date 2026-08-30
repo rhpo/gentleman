@@ -4,6 +4,8 @@
     import emblaCarouselSvelte from "embla-carousel-svelte";
     import AutoScroll from "embla-carousel-auto-scroll";
     import { brandSection } from "$lib/i18n/brands";
+    import { toCdnStorageUrl } from "$lib/utils/storage-url";
+    import { STORAGE_BUCKETS } from "$lib/constants/storage";
 
     interface IProps {
         brands: Brand[];
@@ -41,7 +43,7 @@
                             class="brand-item"
                         >
                             <img
-                                src={brand.logo}
+                                src={toCdnStorageUrl(brand.logo, STORAGE_BUCKETS.BRAND_LOGOS)}
                                 alt={brand.name}
                                 class="brand-image"
                             />

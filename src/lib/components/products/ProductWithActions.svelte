@@ -4,6 +4,8 @@
   import { wishlist, toggleWishlist, isInWishlist } from "$lib/stores/wishlist";
   import { t } from "$lib/i18n/translations";
   import { extractColors } from "extract-colors";
+  import { toCdnStorageUrl } from "$lib/utils/storage-url";
+  import { STORAGE_BUCKETS } from "$lib/constants/storage";
 
   interface ProductWithActionsProps {
     product: ProductWithBrand;
@@ -53,7 +55,7 @@
     <div class="image-container">
       <a href="/products/{product.id}" class="image-link">
         <img
-          src={`/api/image?url=${encodeURIComponent(product.image)}`}
+          src={toCdnStorageUrl(product.image, STORAGE_BUCKETS.PRODUCT_IMAGES)}
           alt={product.name}
           loading="lazy"
           class="main-image"

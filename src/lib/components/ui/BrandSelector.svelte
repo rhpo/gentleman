@@ -2,6 +2,8 @@
   import type { Brand } from "$lib/types/entities";
   import Modal from "./Modal.svelte";
   import { t } from "$lib/i18n/translations";
+  import { toCdnStorageUrl } from "$lib/utils/storage-url";
+  import { STORAGE_BUCKETS } from "$lib/constants/storage";
   import {
     LayoutGrid,
     ChevronRight,
@@ -72,7 +74,7 @@
       {#if selectedBrand}
         <img
           class="brand-logo-small"
-          src={selectedBrand?.logo}
+          src={toCdnStorageUrl(selectedBrand?.logo, STORAGE_BUCKETS.BRAND_LOGOS)}
           alt={selectedBrand?.name}
         />
       {:else}
@@ -139,7 +141,7 @@
           onclick={() => selectBrand(brand)}
         >
           <div class="brand-logo-container">
-            <img src={brand.logo} alt={brand.name} class="brand-logo" />
+            <img src={toCdnStorageUrl(brand.logo, STORAGE_BUCKETS.BRAND_LOGOS)} alt={brand.name} class="brand-logo" />
           </div>
           <div class="brand-info">
             <span class="brand-name">{brand.name}</span>

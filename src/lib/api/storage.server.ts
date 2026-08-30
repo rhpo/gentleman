@@ -7,8 +7,10 @@ import type { Database } from "$lib/types/database";
  * The caller must provide a configured SupabaseClient (usually an admin/service-role client).
  */
 
+import { toCdnStorageUrl } from "$lib/utils/storage-url";
+
 /**
- * Upload a file and return its public URL.
+ * Upload a file and return its CDN URL.
  */
 export async function uploadFile(
   supabase: SupabaseClient<Database>,
@@ -26,7 +28,7 @@ export async function uploadFile(
   }
 
   const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(data.path);
-  return publicUrl;
+  return toCdnStorageUrl(publicUrl, bucket);
 }
 
 /**

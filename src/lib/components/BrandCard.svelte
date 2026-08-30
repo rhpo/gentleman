@@ -2,6 +2,8 @@
   import Button from "$lib/components/ui/Button.svelte";
   import { theme } from "$lib/stores/theme";
   import type { Brand } from "$lib/types/entities";
+  import { toCdnStorageUrl } from "$lib/utils/storage-url";
+  import { STORAGE_BUCKETS } from "$lib/constants/storage";
 
   let { brand, onDelete }: { brand: Brand; onDelete: (id: number) => void } =
     $props();
@@ -11,7 +13,7 @@
   <div class="brand-logo-container">
     {#if brand.logo}
       <img
-        src={brand.logo}
+        src={toCdnStorageUrl(brand.logo, STORAGE_BUCKETS.BRAND_LOGOS)}
         alt={brand.name}
         class="brand-logo"
         class:inverted={$theme === "dark"}

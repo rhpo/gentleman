@@ -2,6 +2,9 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '$lib/types/database';
 import type { Brand } from '$lib/types/entities';
 
+import { toCdnStorageUrl } from '$lib/utils/storage-url';
+import { STORAGE_BUCKETS } from '$lib/constants/storage';
+
 export type BrandWithCount = Brand & { products_count: number };
 
 /**
@@ -19,6 +22,7 @@ export async function getBrands(supabase: SupabaseClient<Database>): Promise<Bra
 
 	return (data as any[] || []).map(brand => ({
 		...brand,
+		logo: toCdnStorageUrl(brand.logo, STORAGE_BUCKETS.BRAND_LOGOS),
 		products_count: brand.products?.[0]?.count || 0
 	})) as Brand[];
 }
@@ -40,7 +44,12 @@ export async function getBrandById(
     if (error.code === "PGRST116") return null;
     throw new Error(error.message);
   }
-  return (data || null) as unknown as Brand | null;
+  if (!data) return null;
+  const brand = data as any;
+  return {
+    ...brand,
+    logo: toCdnStorageUrl(brand.logo, STORAGE_BUCKETS.BRAND_LOGOS)
+  } as unknown as Brand;
 }
 
 /**
