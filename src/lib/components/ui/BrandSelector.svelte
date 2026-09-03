@@ -4,6 +4,7 @@
   import { t } from "$lib/i18n/translations";
   import { toCdnStorageUrl } from "$lib/utils/storage-url";
   import { STORAGE_BUCKETS } from "$lib/constants/storage";
+  import { normalizeBrandParam } from "$lib/utils/search";
   import {
     LayoutGrid,
     ChevronRight,
@@ -47,7 +48,12 @@
   }
 
   const selectedBrand = $derived(
-    brands.find((b) => (bindToId ? b.id === value : b.name === value)),
+    brands.find((b) =>
+      bindToId
+        ? b.id === value
+        : normalizeBrandParam(b.name).toLowerCase() ===
+          normalizeBrandParam(String(value ?? "")).toLowerCase(),
+    ),
   );
 
   const filteredBrands = $derived(
@@ -137,7 +143,10 @@
       {#each filteredBrands as brand (brand.id)}
         <button
           class="brand-card"
-          class:active={bindToId ? value === brand.id : value === brand.name}
+          class:active={bindToId
+            ? value === brand.id
+            : normalizeBrandParam(brand.name).toLowerCase() ===
+              normalizeBrandParam(String(value ?? "")).toLowerCase()}
           onclick={() => selectBrand(brand)}
         >
           <div class="brand-logo-container">

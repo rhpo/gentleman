@@ -59,7 +59,7 @@
           visibleCount += BATCH_SIZE;
         }
       },
-      { rootMargin: "300px 0px" }
+      { rootMargin: "300px 0px" },
     );
 
     observer.observe(sentinelEl);
@@ -75,7 +75,11 @@
       params.delete(key);
     }
 
-    goto(`/products?${params.toString()}`);
+    if (key === "brand") {
+      params.delete("query");
+    }
+
+    goto(`/products?${params.toString()}`, { replaceState: true });
   }
 </script>
 

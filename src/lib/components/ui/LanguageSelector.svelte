@@ -2,7 +2,7 @@
     import { slide } from "svelte/transition";
     import { onMount, tick } from "svelte";
     import IconButton from "../ui/IconButton.svelte";
-    import { languageName, languageToEmoji } from "$lib/utils/international";
+    import { languageName, languageToFlagImage } from "$lib/utils/international";
     import { languages, type Language } from "$lib/i18n";
 
     interface IProps {
@@ -59,7 +59,11 @@
 <div class="language-selector" bind:this={container}>
     <!-- Trigger -->
     <IconButton onClick={toggle} aria-label="Select language">
-        <span class="flag">{languageToEmoji(language)}</span>
+        <img
+            src={languageToFlagImage(language)}
+            alt={languageName(language)}
+            class="flag-img"
+        />
     </IconButton>
 
     <!-- Dropdown -->
@@ -75,7 +79,11 @@
                     class:selected={lang === language}
                     onclick={() => selectLanguage(lang)}
                 >
-                    <span>{languageToEmoji(lang)}</span>
+                    <img
+                        src={languageToFlagImage(lang)}
+                        alt={languageName(lang)}
+                        class="flag-img-sm"
+                    />
                     <span class="code">{languageName(lang)}</span>
                 </button>
             {/each}
@@ -88,9 +96,21 @@
         position: relative;
     }
 
-    .flag {
-        font-size: 1.2rem;
-        line-height: 1;
+    .flag-img {
+        width: 22px;
+        height: 22px;
+        object-fit: cover;
+        border-radius: 50%;
+        display: block;
+    }
+
+    .flag-img-sm {
+        width: 18px;
+        height: 18px;
+        object-fit: cover;
+        border-radius: 50%;
+        display: inline-block;
+        flex-shrink: 0;
     }
 
     .dropdown {

@@ -34,6 +34,7 @@
 		"embla-carousel-svelte": "^8.6.0",
 		"embla-carousel-wheel-gestures": "^8.1.0",
 		"extract-colors": "^4.2.1",
+		"jimp": "^1.6.1",
 		"smooth-scrollbar": "^8.8.4",
 		"vanilla-tilt-svelte": "^1.0.4"
 	}

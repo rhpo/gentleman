@@ -59,6 +59,7 @@ export interface Translations {
 
     // Actions
     addToCart: string;
+    buyNow: string;
     added: string;
     discover: string;
     checkout: string;
@@ -69,6 +70,7 @@ export interface Translations {
     delete: string;
     edit: string;
     create: string;
+    recommended: string;
 
     // Cart
     yourCart: string;
@@ -143,6 +145,7 @@ export interface Translations {
     shippingInformation: string;
     orderSummary: string;
     discount: string;
+    moreFromBrand: string;
 }
 
 export const t = derived<typeof language, Translations>(
@@ -153,6 +156,7 @@ export const t = derived<typeof language, Translations>(
 export const translations: Record<Language, Translations> = {
 
     fr: {
+        recommended: 'Recommandation',
         shippingInformation: 'Informations de livraison',
         orderSummary: 'Résumé de la commande',
         discount: 'Réduction',
@@ -216,6 +220,7 @@ export const translations: Record<Language, Translations> = {
         large: 'Grand',
 
         addToCart: 'Ajouter au panier',
+        buyNow: 'Acheter maintenant',
         added: 'Ajouté',
         checkout: 'Commander',
         apply: 'Appliquer',
@@ -267,9 +272,11 @@ export const translations: Record<Language, Translations> = {
 
         filterBy: 'Filtrer par',
         allProducts: 'Tous les Parfums',
-        allRightsReserved: 'Tous droits réservés'
+        allRightsReserved: 'Tous droits réservés',
+        moreFromBrand: 'Plus de la marque'
     },
     en: {
+        recommended: 'Recommended',
         shippingInformation: 'Shipping Information',
         orderSummary: 'Order Summary',
         discount: 'Discount',
@@ -334,6 +341,7 @@ export const translations: Record<Language, Translations> = {
         large: 'Large',
 
         addToCart: 'Add to cart',
+        buyNow: 'Buy Now',
         added: 'Added',
         checkout: 'Checkout',
         apply: 'Apply',
@@ -385,10 +393,11 @@ export const translations: Record<Language, Translations> = {
 
         filterBy: 'Filter by',
         allProducts: 'All fragrances',
-
         allRightsReserved: 'All rights reserved',
+        moreFromBrand: 'More from'
     },
     ar: {
+        recommended: 'توصيات',
         shippingInformation: 'معلومات الشحن',
         orderSummary: 'ملخص الطلب',
         discount: 'خصم',
@@ -452,6 +461,7 @@ export const translations: Record<Language, Translations> = {
         large: 'كبير',
 
         addToCart: 'أضف إلى السلة',
+        buyNow: 'اشتري الآن',
         added: 'تمت الإضافة',
         checkout: 'إتمام الطلب',
         apply: 'تطبيق',
@@ -503,7 +513,8 @@ export const translations: Record<Language, Translations> = {
 
         filterBy: 'تصفية حسب',
         allProducts: 'جميع المنتجات',
-        allRightsReserved: 'جميع الحقوق محفوظة'
+        allRightsReserved: 'جميع الحقوق محفوظة',
+        moreFromBrand: 'المزيد من'
     }
 };
 

@@ -1,7 +1,7 @@
-// Products page server load
 import type { PageServerLoad } from './$types';
 import { getProducts } from '$lib/api/server/products';
 import { getBrands } from '$lib/api/server/brands';
+import { normalizeBrandParam } from '$lib/utils/search';
 
 export const load: PageServerLoad = async ({ url, locals }) => {
     const filters = {
@@ -11,7 +11,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
         scentFamily: url.searchParams.get('scent_family') || '',
         occasion: url.searchParams.get('occasion') || '',
         size: url.searchParams.get('size') || '',
-        brand: url.searchParams.get('brand') || ''
+        brand: normalizeBrandParam(url.searchParams.get('brand'))
     };
 
     try {

@@ -38,7 +38,7 @@
                     <div class="embla__slide">
                         <a
                             href="/products?brand={encodeURIComponent(
-                                brand.name,
+                                brand.name.trim(),
                             )}"
                             class="brand-item"
                         >

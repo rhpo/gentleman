@@ -3,9 +3,11 @@
   import { Crown, Heart, Mars, Venus } from "@lucide/svelte";
   import { wishlist, toggleWishlist, isInWishlist } from "$lib/stores/wishlist";
   import { t } from "$lib/i18n/translations";
-  import { extractColors } from "extract-colors";
+  import { getDominantColor } from "$lib/utils/palette";
   import { toCdnStorageUrl } from "$lib/utils/storage-url";
   import { STORAGE_BUCKETS } from "$lib/constants/storage";
+  import { slugify } from "$lib/utils/search";
+  import { equalizeImage } from "$lib/utils/imageEqualizer";
 
   interface ProductWithActionsProps {
     product: ProductWithBrand;
@@ -18,11 +20,13 @@
 
   // Variant helpers
   let variants = $derived(
-    (product.variants ?? []).slice().sort((a, b) => a.size - b.size)
+    (product.variants ?? []).slice().sort((a, b) => a.size - b.size),
   );
+
   let hasVariants = $derived(variants.length > 0);
+
   let displayPrice = $derived(
-    hasVariants ? Math.min(...variants.map((v) => v.price)) : product.price
+    hasVariants ? Math.min(...variants.map((v) => v.price)) : product.price,
   );
 
   function getGenderLabel(gender: string) {
@@ -32,19 +36,8 @@
   }
 
   async function handleColorExtract(img: HTMLImageElement) {
-    try {
-      const colors = await extractColors(img.src, {
-        colorValidator: (r: number, g: number, b: number, alpha: number = 255) =>
-          alpha > 250 && !(r > 220 && g > 220 && b > 220),
-        distance: 0.2,
-      });
-      if (colors && colors.length > 0) {
-        const c = colors[0];
-        dominantColor = `rgba(${c.red},${c.green},${c.blue},0.5)`;
-      }
-    } catch (err) {
-      console.error("Color extraction failed:", err);
-    }
+    const result = await getDominantColor(img.src);
+    if (result) dominantColor = result.colorCSS;
   }
 </script>
 
@@ -53,21 +46,28 @@
 {:else}
   <div class="product-card-premium" style={`--dominant:${dominantColor}`}>
     <div class="image-container">
-      <a href="/products/{product.id}" class="image-link">
+      <a
+        href="/products/{product.id}-{slugify(product.name)}"
+        class="image-link"
+      >
         <img
           src={toCdnStorageUrl(product.image, STORAGE_BUCKETS.PRODUCT_IMAGES)}
           alt={product.name}
           loading="lazy"
           class="main-image"
-          onload={(e) => handleColorExtract(e.currentTarget as HTMLImageElement)}
+          crossorigin="anonymous"
+          use:equalizeImage
+          onload={(e) =>
+            handleColorExtract(e.currentTarget as HTMLImageElement)}
         />
         <div class="image-overlay"></div>
       </a>
-
       {#if product.gender}
         <span class="category-badge">
-          {#if product.gender === "Men"}<Mars size={12}
-            />{:else if product.gender === "Women"}<Venus size={12}
+          {#if product.gender === "Men"}<Mars
+              size={12}
+            />{:else if product.gender === "Women"}<Venus
+              size={12}
             />{:else}<Crown size={12} />{/if}
           {getGenderLabel(product.gender)}
         </span>
@@ -110,7 +110,9 @@
       </div>
 
       <h3 class="product-title">
-        <a href="/products/{product.id}">{product.name}</a>
+        <a href="/products/{product.id}-{slugify(product.name)}"
+          >{product.name}</a
+        >
       </h3>
 
       {#if product.description}
@@ -173,6 +175,14 @@
     width: 100%;
     height: 100%;
     position: relative;
+
+    /* Fill with COLOR
+    -  First one looks cool, to be studied later.
+    -  Stick to white to hide uneven space left after equalizing space
+    */
+
+    /* background-color: var(--dominant); */
+    background-color: #ffffff;
   }
 
   .main-image {
@@ -192,7 +202,11 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(to bottom, transparent 60%, rgba(0, 0, 0, 0.05));
+    background: linear-gradient(
+      to bottom,
+      transparent 60%,
+      rgba(0, 0, 0, 0.05)
+    );
     opacity: 0;
     transition: opacity var(--transition-medium);
   }
@@ -253,7 +267,7 @@
     position: absolute;
     bottom: var(--spacing-sm);
     right: var(--spacing-sm);
-    background: white;
+    background: #ffffff;
     width: 40px;
     height: 40px;
     border-radius: 50%;

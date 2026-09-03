@@ -6,8 +6,8 @@
   import Button from "$lib/components/ui/Button.svelte";
   import ProductWithActions from "$lib/components/products/ProductWithActions.svelte";
 
+  import { filterAndRankProducts } from "$lib/utils/search";
   import type { ProductWithBrand } from "$lib/types/entities";
-  import type { PageData } from "./$types";
 
   let { data }: { data: PageData } = $props();
 
@@ -20,13 +20,7 @@
   let sentinelEl = $state<HTMLElement | null>(null);
 
   const filteredProducts = $derived.by(() => {
-    if (!searchQuery.trim()) return products;
-    const query = searchQuery.toLowerCase();
-    return products.filter(
-      (p) =>
-        p.name.toLowerCase().includes(query) ||
-        p.type.toLowerCase().includes(query),
-    );
+    return filterAndRankProducts(products, searchQuery);
   });
 
   let visibleProducts = $derived(filteredProducts.slice(0, visibleCount));
@@ -51,7 +45,7 @@
           visibleCount += BATCH_SIZE;
         }
       },
-      { rootMargin: "300px 0px" }
+      { rootMargin: "300px 0px" },
     );
     observer.observe(sentinelEl);
     return () => observer.disconnect();

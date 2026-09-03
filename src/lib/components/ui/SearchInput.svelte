@@ -1,32 +1,41 @@
 <script lang="ts">
     import { Search } from "@lucide/svelte";
-    import { onMount } from "svelte";
 
     let {
-        placeholder = "Rechercher un livre...",
-        onSearch = () => {},
+        placeholder = "Rechercher...",
+        onSearch = (val: string) => {},
         value = $bindable(""),
         searchInput = $bindable(),
     } = $props();
 
-    onMount(() => {
-        searchInput.addEventListener("keydown", (e: any) => {
-            if (e.keyCode === 13) {
-                onSearch(value);
-            }
-        });
-    });
+    function handleKeyDown(e: KeyboardEvent) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            onSearch(value);
+        }
+    }
+
+    function handleSubmit(e: SubmitEvent) {
+        e.preventDefault();
+        onSearch(value);
+    }
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-<main onclick={() => searchInput.focus()}>
-    <input type="text" {placeholder} bind:this={searchInput} bind:value />
+<form class="search-box" onclick={() => searchInput?.focus()} onsubmit={handleSubmit}>
+    <input
+        type="text"
+        {placeholder}
+        bind:this={searchInput}
+        bind:value
+        onkeydown={handleKeyDown}
+    />
 
-    <button onclick={() => onSearch(value)}>
+    <button type="submit">
         <Search />
     </button>
-</main>
+</form>
 
 <style>
     :root {
@@ -34,12 +43,12 @@
         --height-search: 40px;
     }
 
-    :global(html[data-rtl="true"]) main input {
+    :global(html[data-rtl="true"]) .search-box input {
         padding-right: var(--padding-search);
         padding-left: 0;
     }
 
-    main {
+    .search-box {
         width: 100%;
         display: inline-flex;
         align-items: center;
@@ -47,7 +56,6 @@
         background-color: var(--color-card-bg);
 
         border-radius: var(--radius-sm);
-        /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); */
 
         border: 1px solid var(--color-border);
         cursor: text;
@@ -55,7 +63,7 @@
         height: 100%;
     }
 
-    main input {
+    .search-box input {
         flex: 1;
         height: 100%;
         width: 100%;
@@ -66,7 +74,7 @@
         border: none !important;
     }
 
-    main input:focus {
+    .search-box input:focus {
         outline: none;
     }
 
@@ -93,7 +101,7 @@
             --padding-search: 1rem;
         }
 
-        main input {
+        .search-box input {
             font-size: 0.875rem;
         }
     }
